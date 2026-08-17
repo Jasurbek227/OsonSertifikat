@@ -1742,3 +1742,11 @@ body.modal-active {
         height: 33px;
     }
 }
+
+.student-test-page,
+.readiness-test-page,
+.student-topics-page {
+    max-width: 980px;
+    margin-left: auto;
+    margin-right: auto;
+}

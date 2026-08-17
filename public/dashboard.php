@@ -3,10 +3,101 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/auth.php';
-
 requireAuth();
 
-$pageTitle = 'Bosh sahifa';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/student_engine.php';
+
+$userId =
+    (int)
+    ($_SESSION['user_id'] ?? 0);
+
+studentUpdateProgress(
+    $conn,
+    $userId
+);
+
+$progress = 0;
+
+$progressResult =
+    mysqli_query(
+        $conn,
+        "
+        SELECT progress_percent
+        FROM user_progress
+        WHERE user_id = $userId
+        LIMIT 1
+        "
+    );
+
+if ($progressResult) {
+    $row =
+        mysqli_fetch_assoc(
+            $progressResult
+        );
+
+    $progress =
+        (float)
+        (
+            $row['progress_percent']
+            ?? 0
+        );
+}
+
+$mistakeCount = 0;
+
+$mistakeResult =
+    mysqli_query(
+        $conn,
+        "
+        SELECT COUNT(*) AS total
+        FROM mistake_queue mq
+        INNER JOIN questions q
+            ON q.id = mq.question_id
+        WHERE mq.user_id = $userId
+          AND q.is_active = 1
+        "
+    );
+
+if ($mistakeResult) {
+    $row =
+        mysqli_fetch_assoc(
+            $mistakeResult
+        );
+
+    $mistakeCount =
+        (int)
+        $row['total'];
+}
+
+$topicCount = 0;
+
+$topicResult =
+    mysqli_query(
+        $conn,
+        "
+        SELECT COUNT(*) AS total
+        FROM topics
+        WHERE is_active = 1
+        "
+    );
+
+if ($topicResult) {
+    $row =
+        mysqli_fetch_assoc(
+            $topicResult
+        );
+
+    $topicCount =
+        (int)
+        $row['total'];
+}
+
+$readinessUnlocked =
+    $progress >= 95;
+
+$pageTitle =
+    'Bosh sahifa';
 
 require_once __DIR__ . '/../layout/header.php';
 
@@ -14,29 +105,56 @@ require_once __DIR__ . '/../layout/header.php';
 
 <link rel="stylesheet" href="assets/css/style.css">
 
-<section class="dashboard-page">
+<section class="dashboard-page student-dashboard-v2">
 
-    <!-- Readiness -->
 
-    <section class="dashboard-section readiness-section">
+    <section class="dashboard-hero">
 
-        <div class="readiness-card readiness-card-locked" id="readinessCard">
+        <div>
 
-            <div class="readiness-card-icon">
+            <span class="dashboard-hero-label">
+                TAYYORGARLIK
+            </span>
 
-                <i data-lucide="graduation-cap"></i>
+            <h1>
+                Davom eting.
+            </h1>
 
-            </div>
+        </div>
 
-            <div class="readiness-card-content">
 
-                <h3 class="readiness-title">
-                    Sertifikat imtihoniga tayyormanmi?
-                </h3>
+        <div class="dashboard-hero-progress">
 
-                <p class="readiness-description">
-                    Ochilmagan
-                </p>
+            <strong>
+                <?php
+                echo rtrim(
+                    rtrim(
+                        number_format(
+                            $progress,
+                            2,
+                            '.',
+                            ''
+                        ),
+                        '0'
+                    ),
+                    '.'
+                );
+                ?>%
+            </strong>
+
+            <div class="dashboard-hero-progress-bar">
+
+                <span
+                    style="width: <?php
+                        echo min(
+                            100,
+                            max(
+                                0,
+                                $progress
+                            )
+                        );
+                    ?>%;"
+                ></span>
 
             </div>
 
@@ -44,337 +162,332 @@ require_once __DIR__ . '/../layout/header.php';
 
     </section>
 
-    <!-- Total progress -->
 
-    <section class="dashboard-section progress-section">
+    <section class="student-dashboard-grid">
 
-        <div class="section-header">
+        <a
+            href="blocks.php"
+            class="student-dashboard-card primary"
+        >
 
-            <div class="section-heading">
+            <div class="student-dashboard-card-icon">
+                <i data-lucide="clipboard-list"></i>
+            </div>
 
-                <h2 class="section-title">
-                    Umumiy progress
-                </h2>
+            <h2>
+                Bloklar
+            </h2>
+
+        </a>
+
+
+        <a
+            href="topics.php"
+            class="student-dashboard-card primary"
+        >
+
+            <div class="student-dashboard-card-icon">
+                <i data-lucide="book-open"></i>
+            </div>
+
+            <h2>
+                Mavzular
+            </h2>
+
+            <span>
+                <?php echo $topicCount; ?>
+            </span>
+
+        </a>
+
+
+        <a
+            href="mistakes.php"
+            class="student-dashboard-card"
+        >
+
+            <div class="student-dashboard-card-icon">
+                <i data-lucide="circle-alert"></i>
+            </div>
+
+            <h2>
+                Xatolar
+            </h2>
+
+            <span>
+                <?php echo $mistakeCount; ?>
+            </span>
+
+        </a>
+
+
+        <a
+            href="formulas.php"
+            class="student-dashboard-card"
+        >
+
+            <div class="student-dashboard-card-icon">
+                <i data-lucide="sigma"></i>
+            </div>
+
+            <h2>
+                Formulalar
+            </h2>
+
+        </a>
+
+
+        <a
+            href="keywords.php"
+            class="student-dashboard-card"
+        >
+
+            <div class="student-dashboard-card-icon">
+                <i data-lucide="key-round"></i>
+            </div>
+
+            <h2>
+                Kalit so‘zlar
+            </h2>
+
+        </a>
+
+
+        <a
+            href="readiness.php"
+            class="student-dashboard-card readiness-dashboard-card <?php
+                echo $readinessUnlocked
+                    ? 'is-unlocked'
+                    : 'is-locked';
+            ?>"
+        >
+
+            <div class="student-dashboard-card-icon">
+
+                <i
+                    data-lucide="<?php
+                    echo $readinessUnlocked
+                        ? 'graduation-cap'
+                        : 'lock';
+                    ?>"
+                ></i>
 
             </div>
 
-            <span class="progress-value">
-                0%
+            <h2>
+                Imtihonga tayyormanmi?
+            </h2>
+
+        </a>
+
+    </section>
+
+
+    <?php if (!$readinessUnlocked): ?>
+
+        <div class="dashboard-readiness-note">
+
+            <i data-lucide="lock"></i>
+
+            <span>
+                Imtihon 95% progressda ochiladi.
             </span>
 
         </div>
 
-        <div class="progress-card">
+    <?php endif; ?>
 
-            <div class="progress-bar">
-
-                <div class="progress-bar-fill" style="width: 0%;"></div>
-
-            </div>
-
-        </div>
-
-    </section>
-
-    <!-- Main training -->
-
-    <section class="dashboard-section training-section">
-
-        <div class="training-grid training-grid-primary">
-
-            <!-- 20 question blocks -->
-
-            <a href="blocks.php" class="training-card training-card-primary">
-
-                <div class="training-card-icon">
-
-                    <i data-lucide="clipboard-list"></i>
-
-                </div>
-
-                <div class="training-card-content">
-
-                    <h3 class="training-card-title">
-                        20 talik savollar
-                    </h3>
-
-                    <p class="training-card-description">
-                        20 talik aralash savollar ro'yxati
-                    </p>
-
-                </div>
-
-            </a>
-
-            <!-- Questions by topic -->
-
-            <a href="topics.php" class="training-card training-card-primary">
-
-                <div class="training-card-icon">
-
-                    <i data-lucide="book-open"></i>
-
-                </div>
-
-                <div class="training-card-content">
-
-                    <h3 class="training-card-title">
-                        Mavzulardan savollar
-                    </h3>
-
-                    <p class="training-card-description">
-                        Tanlangan mavzudan masalalar yechish
-                    </p>
-
-                </div>
-
-            </a>
-
-            <!-- Competition -->
-
-            <a href="competition.php" class="training-card training-card-primary">
-
-                <div class="training-card-icon">
-
-                    <i data-lucide="trophy"></i>
-
-                </div>
-
-                <div class="training-card-content">
-
-                    <span class="training-card-label">
-                        Bellashuv
-                    </span>
-
-                    <h3 class="training-card-title">
-                        Bellashuv
-                    </h3>
-
-                    <p class="training-card-description">
-                        Boshqalar bilan bellashing
-                    </p>
-
-                </div>
-
-            </a>
-
-        </div>
-
-    </section>
-
-    <!-- Secondary tools -->
-
-    <section class="dashboard-section tools-section">
-
-        <div class="training-grid training-grid-secondary">
-
-            <!-- Keywords -->
-
-            <a href="keywords.php" class="training-card training-card-secondary">
-
-                <div class="training-card-icon">
-
-                    <i data-lucide="key-round"></i>
-
-                </div>
-
-                <div class="training-card-content">
-
-                    <h3 class="training-card-title">
-                        Kalit so‘zlar
-                    </h3>
-
-                </div>
-
-            </a>
-
-            <!-- Formula sheet -->
-
-            <a href="formulas.php" class="training-card training-card-secondary">
-
-                <div class="training-card-icon">
-
-                    <i data-lucide="sigma"></i>
-
-                </div>
-
-                <div class="training-card-content">
-
-                    <h3 class="training-card-title">
-                        Formulalar varaqasi
-                    </h3>
-
-                </div>
-
-            </a>
-
-            <!-- Mistakes -->
-
-            <a href="mistakes.php" class="training-card training-card-secondary">
-
-                <div class="training-card-icon">
-
-                    <i data-lucide="circle-alert"></i>
-
-                </div>
-
-                <div class="training-card-content">
-
-                    <h3 class="training-card-title">
-                        Xatolarni tuzatish
-                    </h3>
-
-                </div>
-
-            </a>
-
-        </div>
-
-    </section>
 
 </section>
 
-<!-- Readiness modal -->
-
-<div class="modal-overlay" id="readinessModal" aria-hidden="true">
-
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="readinessModalTitle">
-
-        <button type="button" class="modal-close" id="readinessModalClose" aria-label="Yopish">
-
-            <i data-lucide="x"></i>
-
-        </button>
-
-        <div class="modal-icon">
-
-            <i data-lucide="graduation-cap"></i>
-
-        </div>
-
-        <h2 class="modal-title" id="readinessModalTitle">
-            Sertifikat imtihoniga tayyormanmi?
-        </h2>
-
-        <p class="modal-description">
-            Ushbu bo‘lim progress 90% ga yetganda ochiladi.
-        </p>
-
-        <div class="modal-progress">
-
-            <div class="modal-progress-header">
-
-                <span>
-                    Hozirgi progress
-                </span>
-
-                <strong>
-                    0%
-                </strong>
-
-            </div>
-
-            <div class="modal-progress-bar">
-
-                <div class="modal-progress-fill" style="width: 0%;"></div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
 
 <script src="https://unpkg.com/lucide@latest"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
 
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
-
-    const readinessCard =
-        document.getElementById('readinessCard');
-
-    const readinessModal =
-        document.getElementById('readinessModal');
-
-    const readinessModalClose =
-        document.getElementById('readinessModalClose');
-
-    if (
-        !readinessCard ||
-        !readinessModal ||
-        !readinessModalClose
-    ) {
-        return;
-    }
-
-    function openReadinessModal() {
-
-        readinessModal.classList.add('modal-open');
-
-        readinessModal.setAttribute(
-            'aria-hidden',
-            'false'
-        );
-
-        document.body.classList.add('modal-active');
-
-    }
-
-    function closeReadinessModal() {
-
-        readinessModal.classList.remove('modal-open');
-
-        readinessModal.setAttribute(
-            'aria-hidden',
-            'true'
-        );
-
-        document.body.classList.remove('modal-active');
-
-    }
-
-    readinessCard.addEventListener(
-        'click',
-        openReadinessModal
-    );
-
-    readinessModalClose.addEventListener(
-        'click',
-        closeReadinessModal
-    );
-
-    readinessModal.addEventListener(
-        'click',
-        function(event) {
-
-            if (event.target === readinessModal) {
-                closeReadinessModal();
-            }
-
+        if (
+            typeof lucide !== 'undefined'
+        ) {
+            lucide.createIcons();
         }
-    );
 
-    document.addEventListener(
-        'keydown',
-        function(event) {
-
-            if (event.key === 'Escape') {
-                closeReadinessModal();
-            }
-
-        }
-    );
-
-});
+    }
+);
 </script>
 
+<style>
+.student-dashboard-v2 {
+    max-width: 980px;
+    margin: 0 auto;
+}
+
+.dashboard-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 22px;
+    margin-bottom: 14px;
+    background: linear-gradient(145deg, #121b25, #0d131b);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 14px;
+}
+
+.dashboard-hero-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.6px;
+    color: #59aafa;
+}
+
+.dashboard-hero h1 {
+    margin: 8px 0 0;
+    font-size: 26px;
+}
+
+.dashboard-hero-progress {
+    width: 210px;
+}
+
+.dashboard-hero-progress strong {
+    display: block;
+    margin-bottom: 7px;
+    text-align: right;
+    font-size: 24px;
+}
+
+.dashboard-hero-progress-bar {
+    height: 7px;
+    overflow: hidden;
+    background: rgba(255,255,255,.08);
+    border-radius: 99px;
+}
+
+.dashboard-hero-progress-bar span {
+    display: block;
+    height: 100%;
+    background: #3d9cff;
+    border-radius: inherit;
+}
+
+.student-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.student-dashboard-card {
+    position: relative;
+    min-height: 130px;
+    padding: 17px;
+    color: inherit;
+    background: rgba(255,255,255,.022);
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: 11px;
+    text-decoration: none;
+    transition:
+        transform 160ms ease,
+        border-color 160ms ease,
+        background 160ms ease;
+}
+
+.student-dashboard-card:hover {
+    color: inherit;
+    transform: translateY(-2px);
+    background: rgba(255,255,255,.035);
+    border-color: rgba(61,156,255,.30);
+}
+
+.student-dashboard-card.primary {
+    min-height: 145px;
+    background: linear-gradient(145deg, #131d28, #101720);
+}
+
+.student-dashboard-card.readiness-dashboard-card {
+    grid-column: 1 / -1;
+    min-height: 105px;
+}
+
+.student-dashboard-card.readiness-dashboard-card.is-locked {
+    opacity: .58;
+}
+
+.student-dashboard-card-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #61aff7;
+    background: rgba(61,156,255,.09);
+    border: 1px solid rgba(61,156,255,.17);
+    border-radius: 9px;
+}
+
+.student-dashboard-card h2 {
+    margin: 17px 0 0;
+    font-size: 14px;
+}
+
+.student-dashboard-card > span {
+    position: absolute;
+    top: 18px;
+    right: 17px;
+    opacity: .48;
+    font-size: 11px;
+}
+
+.dashboard-readiness-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    color: #8e9ba9;
+    font-size: 11px;
+}
+
+.dashboard-readiness-note svg {
+    width: 14px;
+    height: 14px;
+}
+
+@media (max-width: 760px) {
+    .dashboard-hero {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .dashboard-hero-progress {
+        width: 100%;
+    }
+
+    .dashboard-hero-progress strong {
+        text-align: left;
+    }
+
+    .student-dashboard-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .student-dashboard-card.readiness-dashboard-card {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 480px) {
+    .student-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .student-dashboard-card.readiness-dashboard-card {
+        grid-column: auto;
+    }
+}
+</style>
+
 <?php
-
 require_once __DIR__ . '/../layout/footer.php';
-
 ?>
