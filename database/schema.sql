@@ -1,0 +1,210 @@
+CREATE DATABASE IF NOT EXISTS physics_certificate CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE physics_certificate;
+
+CREATE TABLE users (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ username VARCHAR(50) NOT NULL UNIQUE,
+ email VARCHAR(255) NULL UNIQUE,
+ password_hash VARCHAR(255) NOT NULL,
+ avatar_path VARCHAR(500) NULL,
+ created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE topics (
+ id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ name VARCHAR(100) NOT NULL,
+ slug VARCHAR(100) NOT NULL UNIQUE,
+ description TEXT NULL,
+ is_active BOOLEAN NOT NULL DEFAULT TRUE
+) ENGINE=InnoDB;
+
+CREATE TABLE questions (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ topic_id INT UNSIGNED NOT NULL,
+ question_type ENUM('multiple_choice','six_option','written') NOT NULL,
+ text TEXT NOT NULL,
+ correct_answer TEXT NULL,
+ part_a_text TEXT NULL,
+ part_a_correct_answer VARCHAR(255) NULL,
+ part_b_text TEXT NULL,
+ part_b_correct_answer VARCHAR(255) NULL,
+ is_new BOOLEAN NOT NULL DEFAULT FALSE,
+ is_active BOOLEAN NOT NULL DEFAULT TRUE,
+ created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY (topic_id) REFERENCES topics(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+ INDEX idx_questions_topic (topic_id),
+ INDEX idx_questions_type (question_type),
+ INDEX idx_questions_active (is_active),
+ INDEX idx_questions_new (is_new)
+) ENGINE=InnoDB;
+
+CREATE TABLE question_options (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ question_id BIGINT UNSIGNED NOT NULL,
+ option_key CHAR(1) NOT NULL,
+ option_text TEXT NOT NULL,
+ FOREIGN KEY (question_id) REFERENCES questions(id) ON UPDATE CASCADE ON DELETE CASCADE,
+ UNIQUE KEY uq_question_option (question_id, option_key)
+) ENGINE=InnoDB;
+
+CREATE TABLE question_images (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ question_id BIGINT UNSIGNED NOT NULL,
+ file_path VARCHAR(500) NOT NULL,
+ FOREIGN KEY (question_id) REFERENCES questions(id) ON UPDATE CASCADE ON DELETE CASCADE,
+ INDEX idx_images_question (question_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE blocks (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ name VARCHAR(100) NOT NULL,
+ generation INT UNSIGNED NOT NULL DEFAULT 1,
+ description TEXT NULL,
+ created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ is_active BOOLEAN NOT NULL DEFAULT TRUE
+) ENGINE=InnoDB;
+
+CREATE TABLE block_questions (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ block_id BIGINT UNSIGNED NOT NULL,
+ question_id BIGINT UNSIGNED NOT NULL,
+ FOREIGN KEY (block_id) REFERENCES blocks(id) ON UPDATE CASCADE ON DELETE CASCADE,
+ FOREIGN KEY (question_id) REFERENCES questions(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+ INDEX idx_block_questions_block (block_id),
+ INDEX idx_block_questions_question (question_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE block_sessions (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ user_id BIGINT UNSIGNED NOT NULL,
+ block_id BIGINT UNSIGNED NOT NULL,
+ started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ finished_at DATETIME NULL,
+ status ENUM('active','completed','abandoned') NOT NULL DEFAULT 'active',
+ score INT UNSIGNED NULL,
+ total_questions INT UNSIGNED NOT NULL,
+ FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
+ FOREIGN KEY (block_id) REFERENCES blocks(id) ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE exam_sessions (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ user_id BIGINT UNSIGNED NOT NULL,
+ started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ finished_at DATETIME NULL,
+ time_limit_seconds INT UNSIGNED NOT NULL,
+ status ENUM('active','completed','abandoned') NOT NULL DEFAULT 'active',
+ score DECIMAL(7,2) NULL,
+ grade VARCHAR(10) NULL,
+ FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE exam_session_questions (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ session_id BIGINT UNSIGNED NOT NULL,
+ question_id BIGINT UNSIGNED NOT NULL,
+ FOREIGN KEY (session_id) REFERENCES exam_sessions(id) ON UPDATE CASCADE ON DELETE CASCADE,
+ FOREIGN KEY (question_id) REFERENCES questions(id) ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE mistake_sessions (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ user_id BIGINT UNSIGNED NOT NULL,
+ started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ finished_at DATETIME NULL,
+ status ENUM('active','completed','abandoned') NOT NULL DEFAULT 'active',
+ score INT UNSIGNED NULL,
+ total_questions INT UNSIGNED NOT NULL,
+ FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE mistake_queue (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ user_id BIGINT UNSIGNED NOT NULL,
+ question_id BIGINT UNSIGNED NOT NULL,
+ created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
+ FOREIGN KEY (question_id) REFERENCES questions(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+ UNIQUE KEY uq_mistake_user_question (user_id, question_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE mistake_session_questions (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ session_id BIGINT UNSIGNED NOT NULL,
+ question_id BIGINT UNSIGNED NOT NULL,
+ FOREIGN KEY (session_id) REFERENCES mistake_sessions(id) ON UPDATE CASCADE ON DELETE CASCADE,
+ FOREIGN KEY (question_id) REFERENCES questions(id) ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE readiness_sessions (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ user_id BIGINT UNSIGNED NOT NULL,
+ started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ finished_at DATETIME NULL,
+ status ENUM('active','completed','abandoned') NOT NULL DEFAULT 'active',
+ score DECIMAL(7,2) NULL,
+ percentage DECIMAL(5,2) NULL,
+ result ENUM('ready','not_ready') NULL,
+ FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE readiness_questions (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ session_id BIGINT UNSIGNED NOT NULL,
+ question_id BIGINT UNSIGNED NOT NULL,
+ FOREIGN KEY (session_id) REFERENCES readiness_sessions(id) ON UPDATE CASCADE ON DELETE CASCADE,
+ FOREIGN KEY (question_id) REFERENCES questions(id) ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE attempts (
+ id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ user_id BIGINT UNSIGNED NOT NULL,
+ question_id BIGINT UNSIGNED NOT NULL,
+ block_session_id BIGINT UNSIGNED NULL,
+ exam_session_id BIGINT UNSIGNED NULL,
+ mistake_session_id BIGINT UNSIGNED NULL,
+ readiness_session_id BIGINT UNSIGNED NULL,
+ answer TEXT NULL,
+ is_correct BOOLEAN NOT NULL,
+ FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
+ FOREIGN KEY (question_id) REFERENCES questions(id) ON UPDATE CASCADE ON DELETE RESTRICT,
+ FOREIGN KEY (block_session_id) REFERENCES block_sessions(id) ON UPDATE CASCADE ON DELETE SET NULL,
+ FOREIGN KEY (exam_session_id) REFERENCES exam_sessions(id) ON UPDATE CASCADE ON DELETE SET NULL,
+ FOREIGN KEY (mistake_session_id) REFERENCES mistake_sessions(id) ON UPDATE CASCADE ON DELETE SET NULL,
+ FOREIGN KEY (readiness_session_id) REFERENCES readiness_sessions(id) ON UPDATE CASCADE ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE user_progress (
+ user_id BIGINT UNSIGNED PRIMARY KEY,
+ progress_percent DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+ updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE user_topic_progress (
+ user_id BIGINT UNSIGNED NOT NULL,
+ topic_id INT UNSIGNED NOT NULL,
+ progress_percent DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+ updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+ PRIMARY KEY (user_id, topic_id),
+ FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
+ FOREIGN KEY (topic_id) REFERENCES topics(id) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE saved_questions (
+ user_id BIGINT UNSIGNED NOT NULL,
+ question_id BIGINT UNSIGNED NOT NULL,
+ created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ PRIMARY KEY (user_id, question_id),
+ FOREIGN KEY (user_id) REFERENCES users(id) ON UPDATE CASCADE ON DELETE CASCADE,
+ FOREIGN KEY (question_id) REFERENCES questions(id) ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+INSERT INTO topics (name, slug) VALUES
+('Kinematika','kinematika'),
+('Molekulyar fizika','molekulyar-fizika'),
+('Elektr fizikasi','elektr-fizikasi'),
+('Optika','optika'),
+('Nisbiylik nazariyasi','nisbiylik-nazariyasi'),
+('Kvant fizikasi','kvant-fizikasi');

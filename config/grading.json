@@ -1,0 +1,10 @@
+{
+  "grades": {
+    "A+": {"min_score": 40},
+    "A": {"min_score": 35},
+    "B+": {"min_score": 30},
+    "B": {"min_score": 25},
+    "C+": {"min_score": 20},
+    "C": {"min_score": 0}
+  }
+}

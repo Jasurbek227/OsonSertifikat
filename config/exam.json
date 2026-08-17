@@ -1,0 +1,15 @@
+{
+  "full_exam": {
+    "total_questions": 55,
+    "parent_problems": 45,
+    "duration_minutes": 150
+  },
+  "readiness": {
+    "unlock_progress_percent": 95,
+    "total_questions": 300,
+    "pass_percent": 70
+  },
+  "training_block": {
+    "questions_per_block": 20
+  }
+}

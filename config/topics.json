@@ -1,0 +1,10 @@
+{
+  "topics": [
+    {"id": 1, "name": "Kinematika", "slug": "kinematika"},
+    {"id": 2, "name": "Molekulyar fizika", "slug": "molekulyar-fizika"},
+    {"id": 3, "name": "Elektr fizikasi", "slug": "elektr-fizikasi"},
+    {"id": 4, "name": "Optika", "slug": "optika"},
+    {"id": 5, "name": "Nisbiylik nazariyasi", "slug": "nisbiylik-nazariyasi"},
+    {"id": 6, "name": "Kvant fizikasi", "slug": "kvant-fizikasi"}
+  ]
+}
