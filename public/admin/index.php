@@ -9,15 +9,10 @@ requireAdmin();
 
 $pageTitle = 'Admin Panel';
 
-
-/*
-|--------------------------------------------------------------------------
-| Dashboard statistics
-|--------------------------------------------------------------------------
-*/
-
-function getTableCount(mysqli $conn, string $table): int
-{
+function getTableCount(
+    mysqli $conn,
+    string $table
+): int {
     $allowedTables = [
         'users',
         'questions',
@@ -30,7 +25,7 @@ function getTableCount(mysqli $conn, string $table): int
 
     $result = mysqli_query(
         $conn,
-        "SELECT COUNT(*) AS total FROM `{$table}`"
+        "SELECT COUNT(*) AS total FROM `$table`"
     );
 
     if (!$result) {
@@ -42,19 +37,16 @@ function getTableCount(mysqli $conn, string $table): int
     return (int) ($row['total'] ?? 0);
 }
 
-
 $userCount = getTableCount($conn, 'users');
 $questionCount = getTableCount($conn, 'questions');
 $blockCount = getTableCount($conn, 'blocks');
-
 ?>
+
 <link rel="stylesheet" href="../assets/css/admin.css">
+
 <main class="admin-page">
 
     <section class="admin-dashboard">
-
-
-        <!-- Header -->
 
         <div class="admin-page-header">
 
@@ -74,10 +66,12 @@ $blockCount = getTableCount($conn, 'blocks');
 
             </div>
 
-
             <div class="admin-header-actions">
 
-                <a href="../dashboard.php" class="btn btn-outline-light">
+                <a
+                    href="../dashboard.php"
+                    class="btn btn-outline-light"
+                >
                     <i data-lucide="external-link"></i>
                     Saytga o'tish
                 </a>
@@ -86,92 +80,60 @@ $blockCount = getTableCount($conn, 'blocks');
 
         </div>
 
-
-        <!-- Statistics -->
-
         <section class="admin-stats-grid">
 
-
-            <!-- Users -->
-
             <div class="admin-stat-card">
-
                 <div class="admin-stat-icon admin-stat-icon-blue">
                     <i data-lucide="users"></i>
                 </div>
 
                 <div class="admin-stat-content">
-
                     <span class="admin-stat-label">
                         Foydalanuvchilar
                     </span>
-
                     <strong class="admin-stat-value">
                         <?= $userCount ?>
                     </strong>
-
                 </div>
-
             </div>
 
-
-            <!-- Questions -->
-
             <div class="admin-stat-card">
-
                 <div class="admin-stat-icon admin-stat-icon-blue">
                     <i data-lucide="file-question"></i>
                 </div>
 
                 <div class="admin-stat-content">
-
                     <span class="admin-stat-label">
                         Savollar
                     </span>
-
                     <strong class="admin-stat-value">
                         <?= $questionCount ?>
                     </strong>
-
                 </div>
-
             </div>
 
-
-            <!-- Blocks -->
-
             <div class="admin-stat-card">
-
                 <div class="admin-stat-icon admin-stat-icon-blue">
                     <i data-lucide="layers"></i>
                 </div>
 
                 <div class="admin-stat-content">
-
                     <span class="admin-stat-label">
                         Bloklar
                     </span>
-
                     <strong class="admin-stat-value">
                         <?= $blockCount ?>
                     </strong>
-
                 </div>
-
             </div>
 
-
         </section>
-
-
-        <!-- Management -->
 
         <section class="admin-section">
 
             <div class="admin-section-header">
 
                 <div>
-
                     <h2 class="admin-section-title">
                         Boshqaruv
                     </h2>
@@ -179,157 +141,146 @@ $blockCount = getTableCount($conn, 'blocks');
                     <p class="admin-section-description">
                         Tizim bo‘limlarini boshqarish
                     </p>
-
                 </div>
 
             </div>
 
+            <div class="admin-management-grid admin-management-grid-fixed">
 
-            <div class="admin-management-grid">
-
-
-                <!-- Questions -->
-
-                <a href="questions.php" class="admin-management-card">
-
+                <a
+                    href="questions.php"
+                    class="admin-management-card"
+                >
                     <div class="admin-management-icon">
                         <i data-lucide="file-question"></i>
                     </div>
 
                     <div class="admin-management-content">
-
-                        <h3>
-                            Savollar
-                        </h3>
+                        <h3>Savollar</h3>
 
                         <p>
                             Savollarni ko‘rish, qo‘shish va tahrirlash
                         </p>
-
                     </div>
 
-                    <i data-lucide="arrow-up-right" class="admin-card-arrow"></i>
-
+                    <i
+                        data-lucide="arrow-up-right"
+                        class="admin-card-arrow"
+                    ></i>
                 </a>
 
-
-                <!-- Blocks -->
-
-                <a href="blocks.php" class="admin-management-card">
-
+                <a
+                    href="blocks.php"
+                    class="admin-management-card"
+                >
                     <div class="admin-management-icon">
                         <i data-lucide="layers"></i>
                     </div>
 
                     <div class="admin-management-content">
-
-                        <h3>
-                            Bloklar
-                        </h3>
+                        <h3>Bloklar</h3>
 
                         <p>
-                            20 talik savol bloklarini boshqarish
+                            Savol bloklarini boshqarish
                         </p>
-
                     </div>
 
-                    <i data-lucide="arrow-up-right" class="admin-card-arrow"></i>
-
+                    <i
+                        data-lucide="arrow-up-right"
+                        class="admin-card-arrow"
+                    ></i>
                 </a>
 
-
-                <!-- Users -->
-
-                <a href="users.php" class="admin-management-card">
-
+                <a
+                    href="users.php"
+                    class="admin-management-card"
+                >
                     <div class="admin-management-icon">
                         <i data-lucide="users"></i>
                     </div>
 
                     <div class="admin-management-content">
-
-                        <h3>
-                            Foydalanuvchilar
-                        </h3>
+                        <h3>Foydalanuvchilar</h3>
 
                         <p>
                             Foydalanuvchilarni ko‘rish va boshqarish
                         </p>
-
                     </div>
 
-                    <i data-lucide="arrow-up-right" class="admin-card-arrow"></i>
-
+                    <i
+                        data-lucide="arrow-up-right"
+                        class="admin-card-arrow"
+                    ></i>
                 </a>
 
-
-            </div>
-            <div class="admin-wide-actions">
-
-                <a href="question_create.php" class="admin-wide-action">
-
-                    <span class="admin-wide-action-icon">
-                        <i data-lucide="plus"></i>
-                    </span>
-
-                    <span class="admin-wide-action-content">
-
-                        <strong>
-                            Savol yaratish
-                        </strong>
-
-                        <small>
-                            Yangi test yoki yozma savol qo‘shing
-                        </small>
-
-                    </span>
-
-                    <i data-lucide="arrow-up-right" class="admin-wide-action-arrow"></i>
-
-                </a>
-
-
-                <a href="images.php" class="admin-wide-action">
-
-                    <span class="admin-wide-action-icon">
+                <a
+                    href="images.php"
+                    class="admin-management-card"
+                >
+                    <div class="admin-management-icon">
                         <i data-lucide="images"></i>
-                    </span>
+                    </div>
 
-                    <span class="admin-wide-action-content">
+                    <div class="admin-management-content">
+                        <h3>Rasmlar</h3>
 
-                        <strong>
-                            Rasmlar
-                        </strong>
-
-                        <small>
+                        <p>
                             Rasmlarni yuklang va boshqaring
-                        </small>
+                        </p>
+                    </div>
 
-                    </span>
-
-                    <i data-lucide="arrow-up-right" class="admin-wide-action-arrow"></i>
-
+                    <i
+                        data-lucide="arrow-up-right"
+                        class="admin-card-arrow"
+                    ></i>
                 </a>
 
             </div>
+
+            <a
+                href="question_create.php"
+                class="admin-create-question-wide"
+            >
+
+                <span class="admin-wide-action-icon">
+                    <i data-lucide="plus"></i>
+                </span>
+
+                <span class="admin-wide-action-content">
+
+                    <strong>
+                        Savol yaratish
+                    </strong>
+
+                    <small>
+                        Yangi test yoki yozma savol qo‘shing
+                    </small>
+
+                </span>
+
+                <i
+                    data-lucide="arrow-up-right"
+                    class="admin-wide-action-arrow"
+                ></i>
+
+            </a>
 
         </section>
-
 
     </section>
 
 </main>
 
-
 <script src="https://unpkg.com/lucide@latest"></script>
 
 <script>
-    lucide.createIcons();
+document.addEventListener('DOMContentLoaded', function () {
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+});
 </script>
 
-
 <?php
-
 require_once __DIR__ . '/../../layout/footer.php';
-
 ?>

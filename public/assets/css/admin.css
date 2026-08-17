@@ -3730,3 +3730,111 @@ body {
         height: 96vh;
     }
 }
+
+.admin-block-filter-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(180px, 0.75fr) 120px;
+    column-gap: 10px;
+    align-items: start;
+}
+
+.admin-block-filter-grid .admin-form-field {
+    min-width: 0;
+    margin: 0;
+}
+
+.admin-block-filter-grid .admin-filter-button {
+    height: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 19px;
+    box-sizing: border-box;
+}
+
+.admin-block-filter-grid .admin-filter-button .btn {
+    width: 98px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    margin: 0;
+}
+
+.admin-block-filter-grid .admin-form-field input,
+.admin-block-filter-grid .admin-form-field select {
+    height: 42px;
+}
+
+.admin-management-grid-fixed {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.admin-create-question-wide {
+    position: relative;
+    width: 100%;
+    min-height: 86px;
+    margin-top: 12px;
+    padding: 16px 18px;
+
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    box-sizing: border-box;
+
+    color: inherit !important;
+    background: linear-gradient(145deg, #141c25, #10161e);
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius);
+    text-decoration: none !important;
+
+    transition:
+        background var(--admin-transition),
+        border-color var(--admin-transition),
+        transform var(--admin-transition);
+}
+
+.admin-create-question-wide:hover {
+    color: inherit !important;
+    background: #17202a;
+    border-color: var(--admin-border-hover);
+    transform: translateY(-2px);
+}
+
+.admin-create-question-wide .admin-wide-action-icon {
+    flex: 0 0 44px;
+}
+
+.admin-create-question-wide .admin-wide-action-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.admin-create-question-wide .admin-wide-action-arrow {
+    flex: 0 0 16px;
+}
+
+@media (max-width: 760px) {
+
+    .admin-block-filter-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .admin-block-filter-grid .admin-filter-button {
+        padding-top: 0;
+        justify-content: stretch;
+        align-items: stretch;
+    }
+
+    .admin-block-filter-grid .admin-filter-button .btn {
+        width: 100%;
+    }
+
+    .admin-management-grid-fixed {
+        grid-template-columns: 1fr;
+    }
+}
