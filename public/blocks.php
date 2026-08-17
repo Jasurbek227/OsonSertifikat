@@ -19,36 +19,29 @@ $query = "
         b.description,
         COUNT(q.id) AS question_count
     FROM blocks b
-
     LEFT JOIN block_questions bq
         ON bq.block_id = b.id
-
     LEFT JOIN questions q
         ON q.id = bq.question_id
        AND q.is_active = 1
-
     WHERE b.is_active = 1
-
     GROUP BY
         b.id,
         b.name,
         b.generation,
         b.description
-
     ORDER BY b.id ASC
 ";
 
 $result = mysqli_query($conn, $query);
 
 if ($result) {
-
     while ($row = mysqli_fetch_assoc($result)) {
         $blocks[] = $row;
     }
 }
 
 require_once __DIR__ . '/../layout/header.php';
-
 ?>
 
 <link rel="stylesheet" href="assets/css/style.css">
@@ -59,7 +52,6 @@ require_once __DIR__ . '/../layout/header.php';
         <span class="page-back-icon">←</span>
         <span>Orqaga</span>
     </a>
-
 
     <div class="page-heading">
 
@@ -73,7 +65,6 @@ require_once __DIR__ . '/../layout/header.php';
 
     </div>
 
-
     <?php if (count($blocks) > 0): ?>
 
         <div class="blocks-grid">
@@ -81,18 +72,17 @@ require_once __DIR__ . '/../layout/header.php';
             <?php foreach ($blocks as $block): ?>
 
                 <?php
-                $questionCount =
-                    (int) $block['question_count'];
+                $questionCount = (int) $block['question_count'];
                 ?>
 
-                <a href="block.php?id=<?php
-                echo (int) $block['id'];
-                ?>" class="block-card">
+                <a
+                    href="block.php?id=<?php echo (int) $block['id']; ?>"
+                    class="block-card"
+                >
 
                     <div class="block-card-icon">
                         <i data-lucide="clipboard-list"></i>
                     </div>
-
 
                     <div class="block-card-content">
 
@@ -106,10 +96,7 @@ require_once __DIR__ . '/../layout/header.php';
                             ?>
                         </h3>
 
-
-                        <?php if (
-                            !empty($block['description'])
-                        ): ?>
+                        <?php if (!empty($block['description'])): ?>
 
                             <p class="block-card-description">
                                 <?php
@@ -123,29 +110,21 @@ require_once __DIR__ . '/../layout/header.php';
 
                         <?php endif; ?>
 
-
                         <div class="block-card-meta">
 
                             <span>
-                                <?php
-                                echo $questionCount;
-                                ?>
-                                ta savol
+                                <?php echo $questionCount; ?> ta savol
                             </span>
 
-
                             <span>
-                                <?php
-                                echo $questionCount >= 20
+                                <?php echo $questionCount >= 20
                                     ? 'To‘liq blok'
-                                    : 'Qisqa blok';
-                                ?>
+                                    : 'Qisqa blok'; ?>
                             </span>
 
                         </div>
 
                     </div>
-
 
                     <div class="block-card-arrow">
                         <i data-lucide="arrow-right"></i>
@@ -156,7 +135,6 @@ require_once __DIR__ . '/../layout/header.php';
             <?php endforeach; ?>
 
         </div>
-
 
     <?php else: ?>
 
@@ -184,29 +162,16 @@ require_once __DIR__ . '/../layout/header.php';
 
 </section>
 
-
 <script src="https://unpkg.com/lucide@latest"></script>
 
 <script>
-
-    document.addEventListener(
-        'DOMContentLoaded',
-        function () {
-
-            if (
-                typeof lucide !== 'undefined'
-            ) {
-                lucide.createIcons();
-            }
-
-        }
-    );
-
+document.addEventListener('DOMContentLoaded', function () {
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+});
 </script>
 
-
 <?php
-
 require_once __DIR__ . '/../layout/footer.php';
-
 ?>
