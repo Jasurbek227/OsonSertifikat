@@ -68,7 +68,6 @@ $query = "
     SELECT
         b.id,
         b.name,
-        b.generation,
         b.description,
         b.is_active,
         b.created_at,
@@ -80,7 +79,6 @@ $query = "
     GROUP BY
         b.id,
         b.name,
-        b.generation,
         b.description,
         b.is_active,
         b.created_at
@@ -99,26 +97,38 @@ if ($result) {
 <link rel="stylesheet" href="../assets/css/admin.css">
 
 <section class="admin-page admin-content-page">
+
     <a href="index.php" class="admin-page-back">
         <i data-lucide="arrow-left"></i>
-        Admin panel
+        Dashboard
     </a>
+
+
     <div class="admin-page-header">
 
         <div>
+
             <h1 class="admin-page-title">
                 Bloklar
             </h1>
+
         </div>
 
+
         <div class="admin-header-actions">
-            <a href="block_create.php" class="btn btn-primary admin-action-button">
+
+            <a
+                href="block_create.php"
+                class="btn btn-primary admin-action-button"
+            >
                 <i data-lucide="plus"></i>
                 Yangi blok
             </a>
+
         </div>
 
     </div>
+
 
     <?php if ($message !== ''): ?>
 
@@ -134,24 +144,41 @@ if ($result) {
 
     <?php endif; ?>
 
-    <form method="GET" class="admin-filter-card admin-block-filter-card">
+
+    <form
+        method="GET"
+        class="admin-filter-card admin-block-filter-card"
+    >
 
         <div class="admin-filter-grid admin-block-filter-grid">
 
             <div class="admin-form-field">
-                <label>Qidirish</label>
 
-                <input type="text" name="search" value="<?php
-                echo htmlspecialchars(
-                    $search,
-                    ENT_QUOTES,
-                    'UTF-8'
-                );
-                ?>" placeholder="Blok nomi yoki ID">
+                <label>
+                    Qidirish
+                </label>
+
+                <input
+                    type="text"
+                    name="search"
+                    value="<?php
+                    echo htmlspecialchars(
+                        $search,
+                        ENT_QUOTES,
+                        'UTF-8'
+                    );
+                    ?>"
+                    placeholder="Blok nomi yoki ID"
+                >
+
             </div>
 
+
             <div class="admin-form-field">
-                <label>Holat</label>
+
+                <label>
+                    Holat
+                </label>
 
                 <select name="active">
 
@@ -159,35 +186,49 @@ if ($result) {
                         Barchasi
                     </option>
 
-                    <option value="active" <?php
-                    echo $activeFilter === 'active'
-                        ? 'selected'
-                        : '';
-                    ?>>
+                    <option
+                        value="active"
+                        <?php
+                        echo $activeFilter === 'active'
+                            ? 'selected'
+                            : '';
+                        ?>
+                    >
                         Faol
                     </option>
 
-                    <option value="inactive" <?php
-                    echo $activeFilter === 'inactive'
-                        ? 'selected'
-                        : '';
-                    ?>>
+                    <option
+                        value="inactive"
+                        <?php
+                        echo $activeFilter === 'inactive'
+                            ? 'selected'
+                            : '';
+                        ?>
+                    >
                         Nofaol
                     </option>
 
                 </select>
+
             </div>
 
+
             <div class="admin-filter-button">
-                <button type="submit" class="btn btn-outline-light">
+
+                <button
+                    type="submit"
+                    class="btn btn-outline-light admin-filter-submit"
+                    title="Filtrlash"
+                >
                     <i data-lucide="filter"></i>
-                    Filtrlash
                 </button>
+
             </div>
 
         </div>
 
     </form>
+
 
     <div class="admin-list">
 
@@ -203,6 +244,7 @@ if ($result) {
                             <i data-lucide="layers"></i>
                         </div>
 
+
                         <div class="admin-list-main">
 
                             <div class="admin-list-title-row">
@@ -216,6 +258,7 @@ if ($result) {
                                     );
                                     ?>
                                 </h3>
+
 
                                 <?php if (
                                     (int) $block['is_active'] === 1
@@ -235,12 +278,12 @@ if ($result) {
 
                             </div>
 
-                            <p class="admin-list-description">
 
-                                <?php if (
-                                    !empty($block['description'])
-                                ): ?>
+                            <?php if (
+                                !empty($block['description'])
+                            ): ?>
 
+                                <p class="admin-list-description">
                                     <?php
                                     echo htmlspecialchars(
                                         $block['description'],
@@ -248,14 +291,10 @@ if ($result) {
                                         'UTF-8'
                                     );
                                     ?>
+                                </p>
 
-                                <?php else: ?>
+                            <?php endif; ?>
 
-                                    Tavsif berilmagan.
-
-                                <?php endif; ?>
-
-                            </p>
 
                             <div class="admin-list-meta">
 
@@ -267,7 +306,8 @@ if ($result) {
                                 <span>
                                     <i data-lucide="circle-help"></i>
                                     <?php
-                                    echo (int) $block['question_count'];
+                                    echo (int)
+                                        $block['question_count'];
                                     ?>
                                     ta savol
                                 </span>
@@ -278,41 +318,76 @@ if ($result) {
 
                     </div>
 
+
                     <div class="admin-list-actions">
 
-                        <a href="block_edit.php?id=<?php echo (int) $block['id']; ?>"
-                            class="btn btn-outline-light admin-small-button">
+                        <a
+                            href="block_edit.php?id=<?php
+                            echo (int) $block['id'];
+                            ?>"
+                            class="btn btn-outline-light admin-small-button"
+                            title="Tahrirlash"
+                        >
                             <i data-lucide="pencil"></i>
-                            Tahrirlash
                         </a>
 
-                        <a href="block_edit.php?id=<?php echo (int) $block['id']; ?>&tab=questions"
-                            class="btn btn-outline-light admin-small-button">
+
+                        <a
+                            href="block_edit.php?id=<?php
+                            echo (int) $block['id'];
+                            ?>&tab=questions"
+                            class="btn btn-outline-light admin-small-button"
+                            title="Savollar"
+                        >
                             <i data-lucide="list-plus"></i>
-                            Savollar
                         </a>
 
-                        <form method="POST" class="admin-inline-form"
-                            onsubmit="return confirm('Blok holatini o‘zgartirmoqchimisiz?');">
 
-                            <input type="hidden" name="action" value="toggle">
+                        <form
+                            method="POST"
+                            class="admin-inline-form"
+                            onsubmit="
+                                return confirm(
+                                    'Blok holatini o‘zgartirmoqchimisiz?'
+                                );
+                            "
+                        >
 
-                            <input type="hidden" name="block_id" value="<?php echo (int) $block['id']; ?>">
+                            <input
+                                type="hidden"
+                                name="action"
+                                value="toggle"
+                            >
+
+                            <input
+                                type="hidden"
+                                name="block_id"
+                                value="<?php
+                                echo (int) $block['id'];
+                                ?>"
+                            >
+
 
                             <?php if (
                                 (int) $block['is_active'] === 1
                             ): ?>
 
-                                <button type="submit" class="btn btn-danger admin-small-button">
+                                <button
+                                    type="submit"
+                                    class="btn btn-danger admin-small-button"
+                                    title="O‘chirish"
+                                >
                                     <i data-lucide="power"></i>
-                                    O‘chirish
                                 </button>
 
                             <?php else: ?>
 
-                                <button type="submit" class="btn btn-outline-light admin-small-button">
+                                <button
+                                    type="submit"
+                                    class="btn btn-outline-light admin-small-button"
+                                    title="Faollashtirish"
+                                >
                                     <i data-lucide="power"></i>
-                                    Faollashtirish
                                 </button>
 
                             <?php endif; ?>
@@ -337,10 +412,6 @@ if ($result) {
                     Bloklar topilmadi
                 </h3>
 
-                <p>
-                    Yangi blok yarating.
-                </p>
-
             </div>
 
         <?php endif; ?>
@@ -349,16 +420,23 @@ if ($result) {
 
 </section>
 
+
 <script src="https://unpkg.com/lucide@latest"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
+
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
-    });
+
+    }
+);
 </script>
-<script src="../assets/js/admin.js"></script>
+
+
 <?php
 require_once __DIR__ . '/../../layout/footer.php';
 ?>

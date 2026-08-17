@@ -12,118 +12,62 @@ $pageTitle = 'Savollar';
 $message = '';
 $messageType = '';
 
-if (
-    isset($_GET['delete'])
-) {
-
-    if (
-        $_GET['delete'] === 'success'
-    ) {
-
-        $message =
-            'Savol butunlay o‘chirildi.';
-
-        $messageType =
-            'success';
-    } elseif (
-        $_GET['delete'] === 'error'
-    ) {
-
-        $message =
-            'Savolni o‘chirishda xatolik yuz berdi.';
-
-        $messageType =
-            'error';
-    } elseif (
-        $_GET['delete'] === 'invalid'
-    ) {
-
-        $message =
-            'Noto‘g‘ri savol ID.';
-
-        $messageType =
-            'error';
+if (isset($_GET['delete'])) {
+    if ($_GET['delete'] === 'success') {
+        $message = 'Savol butunlay o‘chirildi.';
+        $messageType = 'success';
+    } elseif ($_GET['delete'] === 'error') {
+        $message = 'Savolni o‘chirishda xatolik yuz berdi.';
+        $messageType = 'error';
+    } elseif ($_GET['delete'] === 'invalid') {
+        $message = 'Noto‘g‘ri savol ID.';
+        $messageType = 'error';
     }
 }
 
 /*
 |--------------------------------------------------------------------------
-| Delete / deactivate question
+| Activate / deactivate
 |--------------------------------------------------------------------------
-|
-| We do not physically delete questions because existing blocks,
-| attempts, mistake queues and other relations may reference them.
-|
 */
-
 if (
     $_SERVER['REQUEST_METHOD'] === 'POST' &&
-    isset($_POST['action'])
+    ($_POST['action'] ?? '') === 'toggle'
 ) {
+    $questionId = (int) ($_POST['question_id'] ?? 0);
 
-    $action = $_POST['action'];
+    if ($questionId > 0) {
+        $query = "
+            UPDATE questions
+            SET is_active = IF(is_active = 1, 0, 1)
+            WHERE id = $questionId
+            LIMIT 1
+        ";
 
-    if ($action === 'toggle') {
-
-        $questionId = isset($_POST['question_id'])
-            ? (int) $_POST['question_id']
-            : 0;
-
-        if ($questionId > 0) {
-
-            $query = "
-                UPDATE questions
-                SET is_active = IF(is_active = 1, 0, 1)
-                WHERE id = $questionId
-                LIMIT 1
-            ";
-
-            if (mysqli_query($conn, $query)) {
-                $message = 'Savol holati o‘zgartirildi.';
-                $messageType = 'success';
-            } else {
-                $message = 'Savol holatini o‘zgartirishda xatolik.';
-                $messageType = 'error';
-            }
+        if (mysqli_query($conn, $query)) {
+            $message = 'Savol holati o‘zgartirildi.';
+            $messageType = 'success';
+        } else {
+            $message = 'Savol holatini o‘zgartirishda xatolik.';
+            $messageType = 'error';
         }
     }
 }
 
-
 /*
 |--------------------------------------------------------------------------
-| Search / filter
+| Filters
 |--------------------------------------------------------------------------
 */
+$search = trim((string) ($_GET['search'] ?? ''));
+$topicId = (int) ($_GET['topic_id'] ?? 0);
+$type = trim((string) ($_GET['type'] ?? ''));
+$activeFilter = trim((string) ($_GET['active'] ?? ''));
 
-$search = isset($_GET['search'])
-    ? trim((string) $_GET['search'])
-    : '';
-
-$topicId = isset($_GET['topic_id'])
-    ? (int) $_GET['topic_id']
-    : 0;
-
-$type = isset($_GET['type'])
-    ? trim((string) $_GET['type'])
-    : '';
-
-$activeFilter = isset($_GET['active'])
-    ? trim((string) $_GET['active'])
-    : '';
-
-
-$conditions = array();
-
-$conditions[] = '1 = 1';
-
+$conditions = ['1 = 1'];
 
 if ($search !== '') {
-
-    $safeSearch = mysqli_real_escape_string(
-        $conn,
-        $search
-    );
+    $safeSearch = mysqli_real_escape_string($conn, $search);
 
     $conditions[] = "
         (
@@ -133,25 +77,20 @@ if ($search !== '') {
     ";
 }
 
-
 if ($topicId > 0) {
     $conditions[] = "q.topic_id = $topicId";
 }
 
-
 if (
-    $type === 'multiple_choice' ||
-    $type === 'six_option' ||
-    $type === 'written'
+    in_array(
+        $type,
+        ['multiple_choice', 'six_option', 'written'],
+        true
+    )
 ) {
-    $safeType = mysqli_real_escape_string(
-        $conn,
-        $type
-    );
-
+    $safeType = mysqli_real_escape_string($conn, $type);
     $conditions[] = "q.question_type = '$safeType'";
 }
-
 
 if ($activeFilter === 'active') {
     $conditions[] = 'q.is_active = 1';
@@ -161,52 +100,36 @@ if ($activeFilter === 'inactive') {
     $conditions[] = 'q.is_active = 0';
 }
 
-
-$where = implode(
-    ' AND ',
-    $conditions
-);
-
+$where = implode(' AND ', $conditions);
 
 /*
 |--------------------------------------------------------------------------
 | Topics
 |--------------------------------------------------------------------------
 */
-
-$topics = array();
-
-$topicQuery = "
-    SELECT
-        id,
-        name
-    FROM topics
-    ORDER BY id ASC
-";
+$topics = [];
 
 $topicResult = mysqli_query(
     $conn,
-    $topicQuery
+    "
+    SELECT id, name
+    FROM topics
+    ORDER BY id ASC
+    "
 );
 
 if ($topicResult) {
-
-    while ($topic = mysqli_fetch_assoc(
-        $topicResult
-    )) {
-
+    while ($topic = mysqli_fetch_assoc($topicResult)) {
         $topics[] = $topic;
     }
 }
-
 
 /*
 |--------------------------------------------------------------------------
 | Questions
 |--------------------------------------------------------------------------
 */
-
-$questions = array();
+$questions = [];
 
 $query = "
     SELECT
@@ -240,18 +163,13 @@ $query = "
     ORDER BY q.id DESC
 ";
 
-$result = mysqli_query(
-    $conn,
-    $query
-);
+$result = mysqli_query($conn, $query);
 
 if ($result) {
-
     while ($row = mysqli_fetch_assoc($result)) {
         $questions[] = $row;
     }
 }
-
 
 ?>
 
@@ -259,30 +177,24 @@ if ($result) {
 
 <section class="page-section admin-page">
 
-    <a href="index.php" class="page-back">
-        <span class="page-back-icon">←</span>
-        <span>Admin panel</span>
+    <a href="index.php" class="admin-page-back">
+        <i data-lucide="arrow-left"></i>
+        Dashboard
     </a>
 
-
-    <div class="page-heading">
+    <div class="page-heading admin-compact-heading">
 
         <h1 class="page-title">
             Savollar
         </h1>
-
-        <p class="page-description">
-            Savollarni yaratish va boshqarish
-        </p>
 
     </div>
 
 
     <?php if ($message !== ''): ?>
 
-        <div class="admin-message admin-message-<?php
-                                                echo $messageType;
-                                                ?>">
+        <div class="admin-message admin-message-<?php echo $messageType; ?>">
+
             <?php
             echo htmlspecialchars(
                 $message,
@@ -290,6 +202,7 @@ if ($result) {
                 'UTF-8'
             );
             ?>
+
         </div>
 
     <?php endif; ?>
@@ -297,14 +210,21 @@ if ($result) {
 
     <div class="admin-toolbar">
 
-        <a href="question_create.php" class="admin-primary-button">
-            + Yangi savol
+        <a
+            href="question_create.php"
+            class="admin-primary-button"
+        >
+            <i data-lucide="plus"></i>
+            Yangi savol
         </a>
 
     </div>
 
 
-    <form method="GET" class="admin-filter-form">
+    <form
+        method="GET"
+        class="admin-filter-form admin-question-filter-form"
+    >
 
         <div class="admin-filter-field">
 
@@ -312,13 +232,18 @@ if ($result) {
                 Qidirish
             </label>
 
-            <input type="text" name="search" value="<?php
-                                                    echo htmlspecialchars(
-                                                        $search,
-                                                        ENT_QUOTES,
-                                                        'UTF-8'
-                                                    );
-                                                    ?>" placeholder="Savol matni yoki ID">
+            <input
+                type="text"
+                name="search"
+                value="<?php
+                echo htmlspecialchars(
+                    $search,
+                    ENT_QUOTES,
+                    'UTF-8'
+                );
+                ?>"
+                placeholder="Savol matni yoki ID"
+            >
 
         </div>
 
@@ -337,14 +262,17 @@ if ($result) {
 
                 <?php foreach ($topics as $topic): ?>
 
-                    <option value="<?php
-                                    echo (int) $topic['id'];
-                                    ?>" <?php
-                            echo $topicId ===
-                                (int) $topic['id']
-                                ? 'selected'
-                                : '';
-                            ?>>
+                    <option
+                        value="<?php
+                        echo (int) $topic['id'];
+                        ?>"
+                        <?php
+                        echo $topicId ===
+                            (int) $topic['id']
+                            ? 'selected'
+                            : '';
+                        ?>
+                    >
                         <?php
                         echo htmlspecialchars(
                             $topic['name'],
@@ -373,29 +301,36 @@ if ($result) {
                     Barchasi
                 </option>
 
-                <option value="multiple_choice" <?php
-                                                echo $type ===
-                                                    'multiple_choice'
-                                                    ? 'selected'
-                                                    : '';
-                                                ?>>
+                <option
+                    value="multiple_choice"
+                    <?php
+                    echo $type === 'multiple_choice'
+                        ? 'selected'
+                        : '';
+                    ?>
+                >
                     Variantli
                 </option>
 
-                <option value="six_option" <?php
-                                            echo $type ===
-                                                'six_option'
-                                                ? 'selected'
-                                                : '';
-                                            ?>>
+                <option
+                    value="six_option"
+                    <?php
+                    echo $type === 'six_option'
+                        ? 'selected'
+                        : '';
+                    ?>
+                >
                     6 variantli
                 </option>
 
-                <option value="written" <?php
-                                        echo $type === 'written'
-                                            ? 'selected'
-                                            : '';
-                                        ?>>
+                <option
+                    value="written"
+                    <?php
+                    echo $type === 'written'
+                        ? 'selected'
+                        : '';
+                    ?>
+                >
                     Yozma
                 </option>
 
@@ -416,21 +351,25 @@ if ($result) {
                     Barchasi
                 </option>
 
-                <option value="active" <?php
-                                        echo $activeFilter ===
-                                            'active'
-                                            ? 'selected'
-                                            : '';
-                                        ?>>
+                <option
+                    value="active"
+                    <?php
+                    echo $activeFilter === 'active'
+                        ? 'selected'
+                        : '';
+                    ?>
+                >
                     Faol
                 </option>
 
-                <option value="inactive" <?php
-                                            echo $activeFilter ===
-                                                'inactive'
-                                                ? 'selected'
-                                                : '';
-                                            ?>>
+                <option
+                    value="inactive"
+                    <?php
+                    echo $activeFilter === 'inactive'
+                        ? 'selected'
+                        : '';
+                    ?>
+                >
                     Nofaol
                 </option>
 
@@ -439,8 +378,12 @@ if ($result) {
         </div>
 
 
-        <button type="submit" class="admin-secondary-button">
-            Filtrlash
+        <button
+            type="submit"
+            class="admin-secondary-button admin-filter-submit"
+            title="Filtrlash"
+        >
+            <i data-lucide="filter"></i>
         </button>
 
     </form>
@@ -452,13 +395,18 @@ if ($result) {
 
             <?php foreach ($questions as $question): ?>
 
+                <?php
+                $questionId =
+                    (int) $question['id'];
+
+                $isActive =
+                    (int) $question['is_active'] === 1;
+                ?>
+
                 <div class="admin-question-row">
 
                     <div class="admin-question-id">
-                        #
-                        <?php
-                        echo (int) $question['id'];
-                        ?>
+                        #<?php echo $questionId; ?>
                     </div>
 
 
@@ -476,30 +424,27 @@ if ($result) {
                                 ?>
                             </span>
 
-                            <span>
-                                <?php
 
-                                if ($question['question_type'] == 'multiple_choice') {
-                                    echo htmlspecialchars(
-                                        'Variantli',
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    );
-                                } else if ($question['question_type'] == 'six_option') {
-                                    echo htmlspecialchars(
-                                        '6 Variantli',
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    );
-                                } else if ($question['question_type'] == 'written') {
-                                    echo htmlspecialchars(
-                                        'Yozma',
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    );
+                            <span>
+
+                                <?php
+                                switch ($question['question_type']) {
+                                    case 'multiple_choice':
+                                        echo 'Variantli';
+                                        break;
+
+                                    case 'six_option':
+                                        echo '6 variantli';
+                                        break;
+
+                                    case 'written':
+                                        echo 'Yozma';
+                                        break;
                                 }
                                 ?>
+
                             </span>
+
 
                             <?php if (
                                 (int) $question['is_new'] === 1
@@ -511,12 +456,21 @@ if ($result) {
 
                             <?php endif; ?>
 
-                            <span>
-                                <?php
-                                echo (int) $question['option_count'];
-                                ?>
-                                variant
-                            </span>
+
+                            <?php if (
+                                (int) $question['option_count'] > 0
+                            ): ?>
+
+                                <span>
+                                    <?php
+                                    echo (int)
+                                        $question['option_count'];
+                                    ?>
+                                    variant
+                                </span>
+
+                            <?php endif; ?>
+
 
                             <?php if (
                                 (int) $question['image_count'] > 0
@@ -548,17 +502,15 @@ if ($result) {
 
                         <div class="admin-question-status">
 
-                            <?php if (
-                                (int) $question['is_active'] === 1
-                            ): ?>
+                            <?php if ($isActive): ?>
 
-                                <span>
+                                <span class="admin-status admin-status-success">
                                     Faol
                                 </span>
 
                             <?php else: ?>
 
-                                <span>
+                                <span class="admin-status admin-status-muted">
                                     Nofaol
                                 </span>
 
@@ -571,50 +523,94 @@ if ($result) {
 
                     <div class="admin-question-actions">
 
-                        <a href="question_edit.php?id=<?php
-                                                        echo (int) $question['id'];
-                                                        ?>" class="admin-action-button">
-                            Tahrirlash
+                        <!-- Edit -->
+                        <a
+                            href="question_edit.php?id=<?php echo $questionId; ?>"
+                            class="admin-question-icon-button admin-question-edit-button"
+                            title="Tahrirlash"
+                            aria-label="Tahrirlash"
+                        >
+                            <i data-lucide="pencil"></i>
                         </a>
 
 
-                        <form method="POST" onsubmit="
+                        <!-- Permanent delete -->
+                        <form
+                            method="POST"
+                            action="question_delete.php"
+                            class="admin-question-inline-form"
+                            onsubmit="
                                 return confirm(
-                                    'Savol holatini o‘zgartirasizmi?'
+                                    'DIQQAT!\n\nBu savol butunlay o‘chiriladi.\nSavolga tegishli variantlar, blok biriktirmalari, urinishlar, xatolar va boshqa bog‘langan ma’lumotlar ham o‘chiriladi.\n\nDavom etasizmi?'
                                 );
-                            ">
+                            "
+                        >
 
-                            <input type="hidden" name="action" value="toggle">
+                            <input
+                                type="hidden"
+                                name="question_id"
+                                value="<?php echo $questionId; ?>"
+                            >
 
-                            <input type="hidden" name="question_id" value="<?php
-                                                                            echo (int) $question['id'];
-                                                                            ?>">
-
-                            <button type="submit" class="admin-action-button">
-                                <?php
-                                echo (
-                                    (int) $question['is_active'] === 1
-                                )
-                                    ? 'O‘chirish'
-                                    : 'Faollashtirish';
-                                ?>
+                            <button
+                                type="submit"
+                                class="admin-question-icon-button admin-question-delete-button"
+                                title="Butunlay o‘chirish"
+                                aria-label="Butunlay o‘chirish"
+                            >
+                                <i data-lucide="trash-2"></i>
                             </button>
 
                         </form>
-                        <form method="POST" action="question_delete.php" onsubmit="
-        return confirm(
-            'DIQQAT!\n\nBu savol butunlay o‘chiriladi.\nSavolga tegishli variantlar, blok biriktirmalari, urinishlar, xatolar va boshqa bog‘langan ma’lumotlar ham o‘chiriladi.\n\nDavom etasizmi?'
-        );
-    ">
 
-                            <input type="hidden" name="question_id" value="<?php
-                                                                            echo (int) $question['id'];
-                                                                            ?>">
 
-                            <button type="submit" class="admin-danger-button">
-                                <i data-lucide="trash-2"></i>
-                                Butunlay o‘chirish
-                            </button>
+                        <!-- Activate / deactivate -->
+                        <form
+                            method="POST"
+                            class="admin-question-switch-form"
+                        >
+
+                            <input
+                                type="hidden"
+                                name="action"
+                                value="toggle"
+                            >
+
+                            <input
+                                type="hidden"
+                                name="question_id"
+                                value="<?php echo $questionId; ?>"
+                            >
+
+
+                            <label
+                                class="admin-question-switch"
+                                title="<?php
+                                    echo $isActive
+                                        ? 'Faol — o‘chirish'
+                                        : 'Nofaol — faollashtirish';
+                                ?>"
+                            >
+
+                                <input
+                                    type="checkbox"
+                                    <?php
+                                    echo $isActive
+                                        ? 'checked'
+                                        : '';
+                                    ?>
+                                    aria-label="<?php
+                                    echo $isActive
+                                        ? 'Savol faol'
+                                        : 'Savol nofaol';
+                                    ?>"
+                                >
+
+                                <span
+                                    class="admin-question-switch-track"
+                                ></span>
+
+                            </label>
 
                         </form>
 
@@ -627,6 +623,10 @@ if ($result) {
         <?php else: ?>
 
             <div class="admin-empty">
+
+                <div class="admin-empty-icon">
+                    <i data-lucide="file-question"></i>
+                </div>
 
                 <h3>
                     Savollar topilmadi
@@ -643,10 +643,50 @@ if ($result) {
     </div>
 
 </section>
-<script src="../assets/js/admin.js"></script>
+
+
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<script>
+document.addEventListener(
+    'DOMContentLoaded',
+    function () {
+
+        document
+            .querySelectorAll(
+                '.admin-question-switch-form input[type="checkbox"]'
+            )
+            .forEach(
+                function (checkbox) {
+
+                    checkbox.addEventListener(
+                        'change',
+                        function () {
+
+                            checkbox
+                                .closest(
+                                    'form'
+                                )
+                                .submit();
+
+                        }
+                    );
+
+                }
+            );
+
+
+        if (
+            typeof lucide !== 'undefined'
+        ) {
+            lucide.createIcons();
+        }
+
+    }
+);
+</script>
+
 
 <?php
-
 require_once __DIR__ . '/../../layout/footer.php';
-
 ?>
