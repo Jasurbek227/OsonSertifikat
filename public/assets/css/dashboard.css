@@ -1,0 +1,501 @@
+
+/* =========================================================
+   OSON SERTIFIKAT — STUDENT DASHBOARD
+   Dedicated dashboard stylesheet
+   ========================================================= */
+
+.dashboard-v3 {
+    width: 100%;
+    max-width: 980px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+/* ---------------------------------------------------------
+   Progress card
+   --------------------------------------------------------- */
+
+.dashboard-progress-card {
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+
+    margin-bottom: 14px;
+    padding: 16px 19px 17px;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            135deg,
+            #10271d 0%,
+            #10221e 48%,
+            #121c24 100%
+        );
+
+    border: 1px solid #2b473d;
+    border-radius: 18px;
+
+    box-shadow:
+        0 8px 28px rgba(0, 0, 0, .18),
+        inset 0 1px 0 rgba(255, 255, 255, .025);
+}
+
+.dashboard-progress-card::after {
+    content: "";
+
+    position: absolute;
+
+    width: 180px;
+    height: 180px;
+
+    right: -70px;
+    top: -100px;
+
+    background: rgba(101, 225, 47, .07);
+
+    border-radius: 50%;
+
+    pointer-events: none;
+}
+
+.dashboard-progress-top {
+    position: relative;
+    z-index: 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    margin-bottom: 10px;
+}
+
+.dashboard-progress-main {
+    min-width: 0;
+}
+
+.dashboard-progress-label {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #9caf9f;
+
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.35px;
+    text-transform: uppercase;
+}
+
+.dashboard-progress-value {
+    color: #ffffff;
+
+    font-size: 24px;
+    line-height: 1;
+
+    font-weight: 850;
+
+    letter-spacing: -.3px;
+}
+
+.dashboard-progress-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+
+    white-space: nowrap;
+}
+
+.dashboard-progress-side-main {
+    color: #d8ef3f;
+
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.dashboard-progress-side-sub {
+    margin-top: 1px;
+
+    color: #789082;
+
+    font-size: 10px;
+    font-weight: 650;
+}
+
+.dashboard-progress-track {
+    position: relative;
+    z-index: 1;
+
+    width: 100%;
+    height: 10px;
+
+    overflow: hidden;
+
+    background: #253b34;
+
+    border-radius: 999px;
+}
+
+.dashboard-progress-fill {
+    display: block;
+
+    width: var(--dashboard-progress);
+
+    height: 100%;
+    min-width: 0;
+
+    background:
+        linear-gradient(
+            90deg,
+            #3bc900 0%,
+            #68df00 48%,
+            #b9ed00 100%
+        );
+
+    border-radius: inherit;
+
+    box-shadow:
+        0 0 12px rgba(86, 222, 0, .48);
+
+    transition:
+        width .7s cubic-bezier(.22, 1, .36, 1);
+}
+
+/* ---------------------------------------------------------
+   Navigation cards
+   --------------------------------------------------------- */
+
+.dashboard-card-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 10px;
+
+    width: 100%;
+}
+
+.dashboard-card {
+    --accent: #3d9cff;
+    --accent-soft: rgba(61, 156, 255, .10);
+    --border-soft: rgba(61, 156, 255, .24);
+
+    position: relative;
+
+    min-height: 112px;
+
+    box-sizing: border-box;
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 15px;
+
+    color: #f2f5f8 !important;
+
+    background:
+        linear-gradient(
+            145deg,
+            #121c25,
+            #101820
+        );
+
+    border: 1px solid rgba(255, 255, 255, .075);
+    border-radius: 12px;
+
+    text-decoration: none !important;
+
+    overflow: hidden;
+
+    transition:
+        transform .16s ease,
+        border-color .16s ease,
+        background .16s ease,
+        box-shadow .16s ease;
+}
+
+.dashboard-card::after {
+    content: "";
+
+    position: absolute;
+
+    width: 90px;
+    height: 90px;
+
+    right: -42px;
+    bottom: -52px;
+
+    background: var(--accent-soft);
+
+    border-radius: 50%;
+
+    pointer-events: none;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-2px);
+
+    background:
+        linear-gradient(
+            145deg,
+            #16222d,
+            #111b24
+        );
+
+    border-color: var(--border-soft);
+
+    box-shadow:
+        0 9px 25px rgba(0, 0, 0, .18);
+}
+
+.dashboard-card:active {
+    transform: translateY(0) scale(.995);
+}
+
+.dashboard-card-icon {
+    position: relative;
+    z-index: 1;
+
+    width: 40px;
+    height: 40px;
+
+    flex: 0 0 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--accent);
+
+    background: var(--accent-soft);
+
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+}
+
+.dashboard-card-icon svg {
+    width: 19px;
+    height: 19px;
+}
+
+.dashboard-card-content {
+    position: relative;
+    z-index: 1;
+
+    min-width: 0;
+    flex: 1;
+}
+
+.dashboard-card-content h2 {
+    margin: 0;
+
+    color: #f2f4f7;
+
+    font-size: 14px;
+    line-height: 1.3;
+
+    font-weight: 800;
+}
+
+.dashboard-card-content span {
+    display: block;
+
+    margin-top: 4px;
+
+    color: #8794a1;
+
+    font-size: 10px;
+    line-height: 1.3;
+}
+
+.dashboard-card-count {
+    position: absolute;
+    z-index: 1;
+
+    top: 13px;
+    right: 14px;
+
+    color: rgba(255, 255, 255, .42);
+
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.dashboard-card-arrow {
+    position: relative;
+    z-index: 1;
+
+    width: 15px;
+    height: 15px;
+
+    flex: 0 0 15px;
+
+    color: rgba(255, 255, 255, .38);
+
+    transition:
+        transform .16s ease,
+        color .16s ease;
+}
+
+.dashboard-card:hover .dashboard-card-arrow {
+    color: rgba(255, 255, 255, .70);
+    transform: translate(2px, -2px);
+}
+
+/* ---------------------------------------------------------
+   Accent colors
+   --------------------------------------------------------- */
+
+.dashboard-card-blue {
+    --accent: #42a4ff;
+    --accent-soft: rgba(66, 164, 255, .11);
+    --border-soft: rgba(66, 164, 255, .28);
+}
+
+.dashboard-card-purple {
+    --accent: #b36fff;
+    --accent-soft: rgba(179, 111, 255, .10);
+    --border-soft: rgba(179, 111, 255, .25);
+}
+
+.dashboard-card-red {
+    --accent: #ff6170;
+    --accent-soft: rgba(255, 97, 112, .10);
+    --border-soft: rgba(255, 97, 112, .26);
+}
+
+.dashboard-card-yellow {
+    --accent: #ffd52e;
+    --accent-soft: rgba(255, 213, 46, .10);
+    --border-soft: rgba(255, 213, 46, .25);
+}
+
+.dashboard-card-cyan {
+    --accent: #40d2ff;
+    --accent-soft: rgba(64, 210, 255, .10);
+    --border-soft: rgba(64, 210, 255, .25);
+}
+
+.dashboard-card-green {
+    --accent: #7ade37;
+    --accent-soft: rgba(122, 222, 55, .10);
+    --border-soft: rgba(122, 222, 55, .25);
+}
+
+/* ---------------------------------------------------------
+   Readiness
+   --------------------------------------------------------- */
+
+.dashboard-readiness {
+    grid-column: 1 / -1;
+
+    min-height: 94px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #141f1a,
+            #111a20
+        );
+}
+
+.dashboard-readiness.is-locked {
+    opacity: .68;
+}
+
+.dashboard-readiness.is-locked:hover {
+    transform: none;
+
+    border-color:
+        rgba(255, 255, 255, .075);
+
+    box-shadow: none;
+}
+
+.dashboard-lock-badge {
+    position: relative;
+    z-index: 1;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 30px;
+    height: 30px;
+
+    flex: 0 0 30px;
+
+    border-radius: 8px;
+
+    background: rgba(255, 255, 255, .055);
+
+    font-size: 13px;
+}
+
+/* ---------------------------------------------------------
+   Desktop balance
+   --------------------------------------------------------- */
+
+.dashboard-card:nth-child(1),
+.dashboard-card:nth-child(2),
+.dashboard-card:nth-child(3),
+.dashboard-card:nth-child(4),
+.dashboard-card:nth-child(5) {
+    min-height: 112px;
+}
+
+/* ---------------------------------------------------------
+   Responsive
+   --------------------------------------------------------- */
+
+@media (max-width: 860px) {
+
+    .dashboard-card-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .dashboard-readiness {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 620px) {
+
+    .dashboard-progress-top {
+        align-items: flex-start;
+    }
+
+    .dashboard-progress-side {
+        display: none;
+    }
+
+    .dashboard-card-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-readiness {
+        grid-column: auto;
+    }
+
+    .dashboard-card {
+        min-height: 78px !important;
+        padding: 12px 14px;
+    }
+
+    .dashboard-card-icon {
+        width: 38px;
+        height: 38px;
+        flex-basis: 38px;
+    }
+
+    .dashboard-progress-card {
+        padding: 14px 15px 15px;
+        border-radius: 15px;
+    }
+}
