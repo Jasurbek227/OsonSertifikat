@@ -3307,3 +3307,426 @@ body {
     }
 
 }
+
+/* Consistent admin buttons */
+.admin-page .admin-danger-button,
+.admin-page button.admin-danger-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+
+    min-height: 40px;
+    padding: 0 14px;
+
+    color: #ffb7bd !important;
+    background: rgba(239, 92, 102, 0.08) !important;
+    border: 1px solid rgba(239, 92, 102, 0.28) !important;
+    border-radius: 9px;
+
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+
+    text-decoration: none;
+    box-shadow: none;
+}
+
+.admin-page .admin-danger-button:hover {
+    color: #fff !important;
+    background: #c94c56 !important;
+    border-color: #e0646c !important;
+}
+
+/* Existing forms can contain a submit button directly. */
+.admin-question-actions form {
+    display: inline-flex;
+    margin: 0;
+}
+
+/* Filter button alignment */
+.admin-filter-form,
+.admin-filter-grid {
+    align-items: end;
+}
+
+.admin-filter-form > button,
+.admin-filter-grid > button,
+.admin-filter-button {
+    align-self: end;
+    display: flex;
+    align-items: flex-end;
+    margin: 0;
+}
+
+.admin-filter-button > button {
+    align-self: end;
+}
+
+.admin-filter-form input,
+.admin-filter-form select,
+.admin-filter-grid input,
+.admin-filter-grid select {
+    margin: 0;
+}
+
+/* Dashboard wide quick actions */
+.admin-wide-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    width: 100%;
+    margin-top: 12px;
+}
+
+.admin-wide-action {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    gap: 13px;
+
+    min-height: 92px;
+    padding: 16px 18px;
+
+    color: inherit !important;
+    background: linear-gradient(145deg, #141c25, #10161e);
+
+    border: 1px solid #232e3a;
+    border-radius: 12px;
+
+    text-decoration: none !important;
+
+    transition:
+        border-color 180ms ease,
+        background 180ms ease,
+        transform 180ms ease;
+}
+
+.admin-wide-action:hover {
+    color: inherit !important;
+    background: #17202a;
+    border-color: #3a5066;
+    transform: translateY(-2px);
+}
+
+.admin-wide-action-icon {
+    width: 44px;
+    height: 44px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 44px;
+
+    color: #55aaff;
+    background: rgba(61, 156, 255, 0.10);
+    border: 1px solid rgba(61, 156, 255, 0.16);
+    border-radius: 9px;
+}
+
+.admin-wide-action-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.admin-wide-action-content {
+    min-width: 0;
+    flex: 1;
+}
+
+.admin-wide-action-content strong {
+    display: block;
+    margin-bottom: 4px;
+
+    color: #f2f5f8;
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.admin-wide-action-content small {
+    display: block;
+    color: #8792a0;
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+.admin-wide-action-arrow {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+    color: #647080;
+}
+
+/* Image upload */
+.admin-upload-input {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+.admin-image-upload-form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.admin-upload-dropzone {
+    flex: 1 1 420px;
+    min-height: 88px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+
+    padding: 15px 18px;
+
+    color: #dbe2e9;
+    background: #0d141b;
+
+    border: 1px dashed #3b4b5c;
+    border-radius: 10px;
+
+    cursor: pointer;
+    text-align: center;
+
+    transition:
+        border-color 180ms ease,
+        background 180ms ease,
+        transform 180ms ease;
+}
+
+.admin-upload-dropzone:hover {
+    background: rgba(61, 156, 255, 0.045);
+    border-color: #4ca4f5;
+    transform: translateY(-1px);
+}
+
+.admin-upload-dropzone svg {
+    width: 21px;
+    height: 21px;
+    color: #55aaff;
+    flex: 0 0 auto;
+}
+
+.admin-upload-dropzone strong {
+    color: #f2f5f8;
+    font-size: 13px;
+}
+
+.admin-upload-dropzone span {
+    color: #7f8b99;
+    font-size: 11px;
+}
+
+.admin-image-upload-form .admin-form-actions {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+}
+
+.admin-image-upload-form .admin-primary-button,
+.admin-image-upload-form .btn-primary {
+    min-width: 125px;
+}
+
+/* Picker modal */
+.admin-image-picker-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(6px);
+}
+
+.admin-image-picker-dialog {
+    width: min(1180px, 96vw);
+    height: min(850px, 92vh);
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    background: #0e151d;
+    border: 1px solid #334352;
+    border-radius: 14px;
+
+    box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.55);
+}
+
+.admin-image-picker-header {
+    min-height: 62px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 18px;
+
+    border-bottom: 1px solid #25313d;
+}
+
+.admin-image-picker-title {
+    color: #f2f5f8;
+    font-size: 16px;
+    font-weight: 750;
+}
+
+.admin-image-picker-close {
+    width: 36px;
+    height: 36px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #aab4bf;
+    background: #161f28;
+    border: 1px solid #2b3946;
+    border-radius: 8px;
+
+    cursor: pointer;
+}
+
+.admin-image-picker-close:hover {
+    color: #fff;
+    background: #202b36;
+}
+
+.admin-image-picker-frame {
+    width: 100%;
+    height: 100%;
+    flex: 1;
+
+    border: 0;
+    background: #0a0f14;
+}
+
+.admin-image-picker-footer {
+    min-height: 66px;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+
+    padding: 0 16px;
+
+    border-top: 1px solid #25313d;
+}
+
+.admin-image-picker-cancel,
+.admin-image-picker-confirm {
+    min-height: 40px;
+    padding: 0 14px;
+
+    border-radius: 9px;
+
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.admin-image-picker-cancel {
+    color: #ccd4dd;
+    background: #151e27;
+    border: 1px solid #344150;
+}
+
+.admin-image-picker-confirm {
+    color: #fff;
+    background: linear-gradient(180deg, #409af0, #2b7bc9);
+    border: 1px solid #3489dc;
+}
+
+.admin-image-picker-confirm:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* Picker page itself */
+.image-picker-page {
+    width: 100% !important;
+    min-height: 100%;
+    margin: 0 !important;
+    padding: 20px !important;
+}
+
+.image-picker-page .admin-page-header {
+    margin-bottom: 14px;
+}
+
+.image-picker-card-selected {
+    outline: 2px solid #3d9cff;
+    outline-offset: -2px;
+    background: rgba(61, 156, 255, 0.10) !important;
+}
+
+.image-picker-card-selected .admin-image-preview {
+    box-shadow: inset 0 0 0 2px rgba(61, 156, 255, 0.5);
+}
+
+.admin-image-picker-selectable {
+    cursor: pointer;
+}
+
+/* Remove empty-state button from block list when a top-right button exists. */
+.admin-list-empty-action {
+    display: none !important;
+}
+
+/* Responsive */
+@media (max-width: 760px) {
+    .admin-wide-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-image-upload-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .admin-upload-dropzone {
+        width: 100%;
+        flex: 1 1 auto;
+    }
+
+    .admin-image-upload-form .admin-form-actions {
+        width: 100%;
+    }
+
+    .admin-image-upload-form .admin-primary-button,
+    .admin-image-upload-form .btn-primary {
+        width: 100%;
+    }
+
+    .admin-image-picker-modal {
+        padding: 8px;
+    }
+
+    .admin-image-picker-dialog {
+        width: 100%;
+        height: 96vh;
+    }
+}

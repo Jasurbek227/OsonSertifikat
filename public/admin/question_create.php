@@ -610,16 +610,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             </div>
 
-
-            <div class="admin-header-actions">
-
-                <a href="questions.php" class="btn btn-outline-light">
-                    <i data-lucide="arrow-left"></i>
-                    Savollar
-                </a>
-
-            </div>
-
         </div>
 
 
@@ -1508,155 +1498,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
 
 
-                /*
-                |--------------------------------------------------------------------------
-                | Images
-                |--------------------------------------------------------------------------
-                */
-
-                const openImagePicker =
-                    document.getElementById(
-                        'openImagePicker'
-                    );
-
-                const selectedImageList =
-                    document.getElementById(
-                        'selectedImageList'
-                    );
-
-                const selectedImagePath =
-                    document.getElementById(
-                        'selectedImagePath'
-                    );
-
-
-                function renderSelectedImage(path) {
-
-                    selectedImageList.innerHTML = '';
-
-
-                    if (!path) {
-                        return;
-                    }
-
-
-                    const item =
-                        document.createElement(
-                            'div'
-                        );
-
-                    item.className =
-                        'admin-selected-image';
-
-
-                    item.innerHTML = `
-        <img
-            src="../${path}"
-            alt=""
-        >
-
-        <div>
-            <strong>
-                Tanlangan rasm
-            </strong>
-
-            <small>
-                ${path}
-            </small>
-        </div>
-
-        <button
-            type="button"
-            class="btn btn-outline-light admin-small-button"
-            id="removeSelectedImage"
-        >
-            <i data-lucide="x"></i>
-            Olib tashlash
-        </button>
-    `;
-
-
-                    selectedImageList.appendChild(
-                        item
-                    );
-
-
-                    if (
-                        typeof lucide !== 'undefined'
-                    ) {
-
-                        lucide.createIcons();
-
-                    }
-
-
-                    document
-                        .getElementById(
-                            'removeSelectedImage'
-                        )
-                        .addEventListener(
-                            'click',
-                            function () {
-
-                                selectedImagePath.value =
-                                    '';
-
-                                selectedImageList.innerHTML =
-                                    '';
-
-                            }
-                        );
-
-                }
-
-
-                openImagePicker.addEventListener(
-                    'click',
-                    function () {
-
-                        window.open(
-                            'images.php?picker=1',
-                            'osonsertifikatImagePicker',
-                            'width=1050,height=750,resizable=yes,scrollbars=yes'
-                        );
-
-                    }
-                );
-
-
-                window.addEventListener(
-                    'message',
-                    function (event) {
-
-                        if (
-                            event.origin !==
-                            window.location.origin
-                        ) {
-
-                            return;
-                        }
-
-
-                        if (
-                            !event.data ||
-                            event.data.type !==
-                            'osonsertifikat-image-selected'
-                        ) {
-
-                            return;
-                        }
-
-
-                        selectedImagePath.value =
-                            event.data.path;
-
-
-                        renderSelectedImage(
-                            event.data.path
-                        );
-
-                    }
-                );
+                
 
 
                 /*
@@ -1670,6 +1512,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         );
     </script>
+    <script src="../assets/js/admin-image-picker.js"></script>
 
 </body>
 

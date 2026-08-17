@@ -59,9 +59,6 @@ $search = isset($_GET['search'])
     ? trim((string) $_GET['search'])
     : '';
 
-$generation = isset($_GET['generation'])
-    ? (int) $_GET['generation']
-    : 0;
 
 $activeFilter = isset($_GET['active'])
     ? trim((string) $_GET['active'])
@@ -86,9 +83,6 @@ if ($search !== '') {
     ";
 }
 
-if ($generation > 0) {
-    $conditions[] = "b.generation = $generation";
-}
 
 if ($activeFilter === 'active') {
     $conditions[] = 'b.is_active = 1';
@@ -102,37 +96,6 @@ $where = implode(
     ' AND ',
     $conditions
 );
-
-
-/*
-|--------------------------------------------------------------------------
-| Generation list
-|--------------------------------------------------------------------------
-*/
-
-$generations = array();
-
-$generationQuery = "
-    SELECT DISTINCT generation
-    FROM blocks
-    ORDER BY generation ASC
-";
-
-$generationResult = mysqli_query(
-    $conn,
-    $generationQuery
-);
-
-if ($generationResult) {
-
-    while ($row = mysqli_fetch_assoc(
-        $generationResult
-    )) {
-
-        $generations[] = (int) $row['generation'];
-    }
-}
-
 
 /*
 |--------------------------------------------------------------------------
@@ -520,17 +483,8 @@ if ($result) {
             </div>
 
             <h3>
-                Bloklar topilmadi
+                Bloklar mavjud emas
             </h3>
-
-            <p>
-                Yangi blok yaratish.
-            </p>
-
-            <a href="block_create.php" class="btn btn-primary">
-                <i data-lucide="plus"></i>
-                Yangi blok
-            </a>
 
         </div>
 

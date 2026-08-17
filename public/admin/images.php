@@ -27,11 +27,13 @@ $pickerMode = (
 
 if (!is_dir($uploadDirectory)) {
 
-    if (!mkdir(
-        $uploadDirectory,
-        0775,
-        true
-    )) {
+    if (
+        !mkdir(
+            $uploadDirectory,
+            0775,
+            true
+        )
+    ) {
 
         $message =
             'Rasm papkasini yaratib bo‘lmadi.';
@@ -136,8 +138,8 @@ if (
 
                     if (
                         !isset(
-                            $allowedTypes[$mimeType]
-                        )
+                        $allowedTypes[$mimeType]
+                    )
                     ) {
 
                         $message =
@@ -240,10 +242,10 @@ if (
 
     $filename =
         isset($_POST['filename'])
-            ? basename(
-                (string) $_POST['filename']
-            )
-            : '';
+        ? basename(
+            (string) $_POST['filename']
+        )
+        : '';
 
 
     if ($filename === '') {
@@ -433,10 +435,7 @@ if (
 
 usort(
     $images,
-    function (
-        array $a,
-        array $b
-    ): int {
+    function (array $a, array $b): int {
         return $b['modified']
             <=> $a['modified'];
     }
@@ -447,231 +446,25 @@ usort(
 
 <?php if ($pickerMode): ?>
 
-<main class="admin-page admin-content-page image-picker-page">
+    <main class="admin-page admin-content-page image-picker-page">
 
-    <div class="admin-page-header">
-
-        <div>
-
-            <span class="admin-eyebrow">
-                IMAGE LIBRARY
-            </span>
-
-            <h1 class="admin-page-title">
-                Rasm tanlash
-            </h1>
-
-            <p class="admin-page-description">
-                Savol uchun mavjud rasmlardan birini tanlang.
-            </p>
-
-        </div>
-
-    </div>
-
-
-    <div class="admin-image-library-grid">
-
-        <?php if (count($images) === 0): ?>
-
-        <div class="admin-empty">
-
-            <div class="admin-empty-icon">
-                <i data-lucide="image-off"></i>
-            </div>
-
-            <h3>
-                Rasmlar mavjud emas
-            </h3>
-
-            <p>
-                Avval rasm yuklang.
-            </p>
-
-        </div>
-
-        <?php else: ?>
-
-        <?php foreach ($images as $image): ?>
-
-        <button type="button" class="admin-image-card admin-image-picker-card" data-image-path="<?php
-                            echo htmlspecialchars(
-                                $image['path'],
-                                ENT_QUOTES,
-                                'UTF-8'
-                            );
-                        ?>">
-
-            <span class="admin-image-preview">
-
-                <img src="../<?php
-                                    echo htmlspecialchars(
-                                        $image['path'],
-                                        ENT_QUOTES,
-                                        'UTF-8'
-                                    );
-                                ?>" alt="">
-
-            </span>
-
-
-            <span class="admin-image-card-info">
-
-                <strong>
-                    <?php
-                                echo htmlspecialchars(
-                                    $image['filename'],
-                                    ENT_QUOTES,
-                                    'UTF-8'
-                                );
-                                ?>
-                </strong>
-
-                <small>
-                    <?php
-                                echo number_format(
-                                    $image['size'] / 1024,
-                                    1
-                                );
-                                ?>
-                    KB
-                </small>
-
-            </span>
-
-        </button>
-
-        <?php endforeach; ?>
-
-        <?php endif; ?>
-
-    </div>
-
-</main>
-
-
-<?php else: ?>
-
-<main class="admin-page admin-content-page">
-
-    <a href="index.php" class="page-back">
-        <span class="page-back-icon">
-            ←
-        </span>
-        <span>
-            Dashboard
-        </span>
-    </a>
-
-
-    <div class="admin-page-header">
-
-        <div>
-
-            <span class="admin-eyebrow">
-                IMAGE LIBRARY
-            </span>
-
-            <h1 class="admin-page-title">
-                Rasmlar
-            </h1>
-
-            <p class="admin-page-description">
-                Savollarda ishlatiladigan rasmlarni yuklang va boshqaring.
-            </p>
-
-        </div>
-
-    </div>
-
-
-    <?php if ($message !== ''): ?>
-
-    <div class="admin-message admin-message-<?php
-                echo $messageType;
-            ?>">
-
-        <?php
-                echo htmlspecialchars(
-                    $message,
-                    ENT_QUOTES,
-                    'UTF-8'
-                );
-                ?>
-
-    </div>
-
-    <?php endif; ?>
-
-
-    <section class="admin-form-card">
-
-        <div class="admin-form-card-header">
+        <div class="admin-page-header">
 
             <div>
 
-                <h2>
-                    Rasm yuklash
-                </h2>
+                <span class="admin-eyebrow">
+                    IMAGE LIBRARY
+                </span>
 
-                <p>
-                    JPG, PNG, WEBP yoki GIF. Maksimal 10 MB.
+                <h1 class="admin-page-title">
+                    Rasm tanlash
+                </h1>
+
+                <p class="admin-page-description">
+                    Savol uchun mavjud rasmlardan birini tanlang.
                 </p>
 
             </div>
-
-        </div>
-
-
-        <form method="POST" enctype="multipart/form-data" class="admin-image-upload-form">
-
-            <input type="hidden" name="action" value="upload">
-
-
-            <label class="admin-upload-dropzone" for="imageUploadInput">
-
-                <i data-lucide="upload"></i>
-
-                <strong>
-                    Rasm tanlang
-                </strong>
-
-                <span>
-                    Kompyuterdan rasm yuklash uchun bosing
-                </span>
-
-            </label>
-
-
-            <input type="file" id="imageUploadInput" name="image" accept="image/jpeg,image/png,image/webp,image/gif"
-                required class="admin-upload-input">
-
-
-            <div class="admin-form-actions">
-
-                <button type="submit" class="admin-primary-button">
-                    <i data-lucide="upload"></i>
-                    Yuklash
-                </button>
-
-            </div>
-
-        </form>
-
-    </section>
-
-
-    <section class="admin-section">
-
-        <div class="admin-section-header">
-
-            <h2 class="admin-section-title">
-                Rasm kutubxonasi
-            </h2>
-
-            <p class="admin-section-description">
-                Jami <?= count($images) ?> ta rasm
-            </p>
 
         </div>
 
@@ -680,121 +473,327 @@ usort(
 
             <?php if (count($images) === 0): ?>
 
-            <div class="admin-empty">
+                <div class="admin-empty">
 
-                <div class="admin-empty-icon">
-                    <i data-lucide="images"></i>
+                    <div class="admin-empty-icon">
+                        <i data-lucide="image-off"></i>
+                    </div>
+
+                    <h3>
+                        Rasmlar mavjud emas
+                    </h3>
+
+                    <p>
+                        Avval rasm yuklang.
+                    </p>
+
                 </div>
 
-                <h3>
-                    Rasm yo‘q
-                </h3>
+            <?php else: ?>
 
-                <p>
-                    Yuqoridagi forma orqali birinchi rasmni yuklang.
+                <?php foreach ($images as $image): ?>
+
+                    <button type="button" class="admin-image-card admin-image-picker-card" data-image-path="<?php
+                    echo htmlspecialchars(
+                        $image['path'],
+                        ENT_QUOTES,
+                        'UTF-8'
+                    );
+                    ?>">
+
+                        <span class="admin-image-preview">
+
+                            <img src="../<?php
+                            echo htmlspecialchars(
+                                $image['path'],
+                                ENT_QUOTES,
+                                'UTF-8'
+                            );
+                            ?>" alt="">
+
+                        </span>
+
+
+                        <span class="admin-image-card-info">
+
+                            <strong>
+                                <?php
+                                echo htmlspecialchars(
+                                    $image['filename'],
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                );
+                                ?>
+                            </strong>
+
+                            <small>
+                                <?php
+                                echo number_format(
+                                    $image['size'] / 1024,
+                                    1
+                                );
+                                ?>
+                                KB
+                            </small>
+
+                        </span>
+
+                    </button>
+
+                <?php endforeach; ?>
+
+            <?php endif; ?>
+
+        </div>
+
+    </main>
+
+
+<?php else: ?>
+
+    <main class="admin-page admin-content-page">
+
+        <a href="index.php" class="page-back">
+            <span class="page-back-icon">
+                ←
+            </span>
+            <span>
+                Dashboard
+            </span>
+        </a>
+
+
+        <div class="admin-page-header">
+
+            <div>
+
+                <span class="admin-eyebrow">
+                    IMAGE LIBRARY
+                </span>
+
+                <h1 class="admin-page-title">
+                    Rasmlar
+                </h1>
+
+                <p class="admin-page-description">
+                    Savollarda ishlatiladigan rasmlarni yuklang va boshqaring.
                 </p>
 
             </div>
 
-            <?php else: ?>
+        </div>
 
-            <?php foreach ($images as $image): ?>
 
-            <article class="admin-image-card">
+        <?php if ($message !== ''): ?>
 
-                <div class="admin-image-preview">
+            <div class="admin-message admin-message-<?php
+            echo $messageType;
+            ?>">
 
-                    <img src="../<?php
-                                        echo htmlspecialchars(
-                                            $image['path'],
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        );
-                                    ?>" alt="">
+                <?php
+                echo htmlspecialchars(
+                    $message,
+                    ENT_QUOTES,
+                    'UTF-8'
+                );
+                ?>
+
+            </div>
+
+        <?php endif; ?>
+
+
+        <section class="admin-form-card">
+
+            <div class="admin-form-card-header">
+
+                <div>
+
+                    <h2>
+                        Rasm yuklash
+                    </h2>
+
+                    <p>
+                        JPG, PNG, WEBP yoki GIF. Maksimal 10 MB.
+                    </p>
 
                 </div>
 
+            </div>
 
-                <div class="admin-image-card-info">
+
+            <form method="POST" enctype="multipart/form-data" class="admin-image-upload-form">
+
+                <input type="hidden" name="action" value="upload">
+
+
+                <label class="admin-upload-dropzone" for="imageUploadInput">
+
+                    <i data-lucide="upload"></i>
 
                     <strong>
-                        <?php
+                        Rasm tanlang
+                    </strong>
+
+                    <span>
+                        Kompyuterdan rasm yuklash uchun bosing
+                    </span>
+
+                </label>
+
+
+                <input type="file" id="imageUploadInput" name="image" accept="image/jpeg,image/png,image/webp,image/gif"
+                    required class="admin-upload-input">
+
+
+                <div class="admin-form-actions">
+
+                    <button type="submit" class="admin-primary-button">
+                        <i data-lucide="upload"></i>
+                        Yuklash
+                    </button>
+
+                </div>
+
+            </form>
+
+        </section>
+
+
+        <section class="admin-section">
+
+            <div class="admin-section-header">
+
+                <h2 class="admin-section-title">
+                    Rasm kutubxonasi
+                </h2>
+
+                <p class="admin-section-description">
+                    Jami <?= count($images) ?> ta rasm
+                </p>
+
+            </div>
+
+
+            <div class="admin-image-library-grid">
+
+                <?php if (count($images) === 0): ?>
+
+                    <div class="admin-empty">
+
+                        <div class="admin-empty-icon">
+                            <i data-lucide="images"></i>
+                        </div>
+
+                        <h3>
+                            Rasm yo‘q
+                        </h3>
+
+                        <p>
+                            Yuqoridagi forma orqali birinchi rasmni yuklang.
+                        </p>
+
+                    </div>
+
+                <?php else: ?>
+
+                    <?php foreach ($images as $image): ?>
+
+                        <article class="admin-image-card">
+
+                            <div class="admin-image-preview">
+
+                                <img src="../<?php
+                                echo htmlspecialchars(
+                                    $image['path'],
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                );
+                                ?>" alt="">
+
+                            </div>
+
+
+                            <div class="admin-image-card-info">
+
+                                <strong>
+                                    <?php
                                     echo htmlspecialchars(
                                         $image['filename'],
                                         ENT_QUOTES,
                                         'UTF-8'
                                     );
                                     ?>
-                    </strong>
+                                </strong>
 
 
-                    <small>
-                        <?php
+                                <small>
+                                    <?php
                                     echo number_format(
                                         $image['size'] / 1024,
                                         1
                                     );
                                     ?>
-                        KB
-                    </small>
+                                    KB
+                                </small>
 
-                </div>
+                            </div>
 
 
-                <div class="admin-image-card-actions">
+                            <div class="admin-image-card-actions">
 
-                    <button type="button" class="admin-secondary-button admin-small-button" onclick="
+                                <button type="button" class="admin-secondary-button admin-small-button" onclick="
                                         window.open(
                                             `<?php
                                             echo htmlspecialchars(
                                                 '../' . $image['path'],
                                                 ENT_QUOTES,
                                                 'UTF-8'
-                                            );?>`,
+                                            ); ?>`,
                                             '_blank'
                                         );
                                     ">
-                        <i data-lucide="external-link"></i>
-                        Ko‘rish
-                    </button>
+                                    <i data-lucide="external-link"></i>
+                                    Ko‘rish
+                                </button>
 
 
-                    <form method="POST" onsubmit="
+                                <form method="POST" onsubmit="
                                         return confirm(
                                             'Bu rasmni o‘chirmoqchimisiz?'
                                         );
                                     ">
 
-                        <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="action" value="delete">
 
-                        <input type="hidden" name="filename" value="<?php
-                                        echo htmlspecialchars(
-                                            $image['filename'],
-                                            ENT_QUOTES,
-                                            'UTF-8'
-                                        );
-                                        ?>">
+                                    <input type="hidden" name="filename" value="<?php
+                                    echo htmlspecialchars(
+                                        $image['filename'],
+                                        ENT_QUOTES,
+                                        'UTF-8'
+                                    );
+                                    ?>">
 
-                        <button type="submit" class="admin-action-button admin-danger-button admin-small-button">
-                            <i data-lucide="trash-2"></i>
-                            O‘chirish
-                        </button>
+                                    <button type="submit" class="admin-action-button admin-danger-button admin-small-button">
+                                        <i data-lucide="trash-2"></i>
+                                        O‘chirish
+                                    </button>
 
-                    </form>
+                                </form>
 
-                </div>
+                            </div>
 
-            </article>
+                        </article>
 
-            <?php endforeach; ?>
+                    <?php endforeach; ?>
 
-            <?php endif; ?>
+                <?php endif; ?>
 
-        </div>
+            </div>
 
-    </section>
+        </section>
 
-</main>
+    </main>
 
 <?php endif; ?>
 
@@ -802,57 +801,51 @@ usort(
 <script src="https://unpkg.com/lucide@latest"></script>
 
 <script>
-document.addEventListener(
-    'DOMContentLoaded',
-    function() {
+    document.addEventListener(
+        'DOMContentLoaded',
+        function () {
 
-        if (
-            typeof lucide !== 'undefined'
-        ) {
+            if (
+                typeof lucide !== 'undefined'
+            ) {
 
-            lucide.createIcons();
+                lucide.createIcons();
 
-        }
+            }
 
 
-        document.querySelectorAll(
-            '.admin-image-picker-card'
-        ).forEach(
-            function(card) {
+            document.querySelectorAll(
+                '.admin-image-picker-card'
+            ).forEach(function (card) {
 
                 card.addEventListener(
                     'click',
-                    function() {
+                    function () {
+
+                        document.querySelectorAll(
+                            '.admin-image-picker-card'
+                        ).forEach(function (item) {
+                            item.classList.remove(
+                                'image-picker-card-selected'
+                            );
+                        });
+
+                        card.classList.add(
+                            'image-picker-card-selected'
+                        );
 
                         const path =
                             card.dataset.imagePath;
-
-
-                        if (
-                            window.opener &&
-                            !window.opener.closed
-                        ) {
-
-                            window.opener.postMessage({
-                                    type: 'osonsertifikat-image-selected',
-                                    path: path
-                                },
-                                window.location.origin
-                            );
-
-                            window.close();
-
-                            return;
-                        }
-
 
                         if (
                             window.parent &&
                             window.parent !== window
                         ) {
 
-                            window.parent.postMessage({
-                                    type: 'osonsertifikat-image-selected',
+                            window.parent.postMessage(
+                                {
+                                    type:
+                                        'osonsertifikat-image-preview',
                                     path: path
                                 },
                                 window.location.origin
@@ -862,9 +855,8 @@ document.addEventListener(
                     }
                 );
 
-            }
-        );
+            });
 
-    }
-);
+        }
+    );
 </script>
