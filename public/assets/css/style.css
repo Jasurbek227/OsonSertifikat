@@ -1245,3 +1245,336 @@ body.modal-active {
     }
 
 }
+
+/* =========================================================
+   STUDENT PRACTICE / MISTAKES
+   ========================================================= */
+
+.question-written {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+
+.question-written-part {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    padding: 16px;
+
+    background: rgba(255, 255, 255, 0.025);
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 10px;
+}
+
+
+.question-written-part-title {
+    width: 30px;
+    height: 30px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    font-size: 12px;
+    font-weight: 750;
+
+    background: rgba(255, 255, 255, 0.08);
+
+    border-radius: 7px;
+}
+
+
+.question-written-part-text {
+    line-height: 1.65;
+}
+
+
+.question-answer-input {
+    width: 100%;
+
+    min-height: 45px;
+
+    padding: 11px 13px;
+
+    color: inherit;
+
+    background: rgba(0, 0, 0, 0.14);
+
+    border: 1px solid rgba(255, 255, 255, 0.10);
+
+    border-radius: 8px;
+
+    outline: none;
+
+    transition:
+        border-color 160ms ease,
+        background 160ms ease;
+}
+
+
+.question-answer-input:focus {
+    background: rgba(61, 156, 255, 0.04);
+
+    border-color: rgba(61, 156, 255, 0.65);
+}
+
+
+.question-answer-submit {
+    min-height: 44px;
+
+    padding: 0 17px;
+
+    color: #fff;
+
+    background: #2f83df;
+
+    border: 1px solid #4292ec;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    font-size: 13px;
+    font-weight: 650;
+
+    transition:
+        background 160ms ease,
+        transform 160ms ease;
+}
+
+
+.question-answer-submit:hover {
+    background: #3c92ef;
+
+    transform: translateY(-1px);
+}
+
+
+.question-answer-submit:disabled {
+    opacity: 0.5;
+
+    cursor: default;
+
+    transform: none;
+}
+
+
+/* =========================================================
+   MISTAKES
+   ========================================================= */
+
+.mistakes-summary {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    margin-bottom: 18px;
+
+    padding: 18px 20px;
+
+    background: rgba(255, 255, 255, 0.025);
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 12px;
+}
+
+
+.mistakes-summary > div {
+    display: flex;
+
+    align-items: baseline;
+
+    gap: 8px;
+}
+
+
+.mistakes-summary strong {
+    font-size: 28px;
+
+    line-height: 1;
+}
+
+
+.mistakes-summary span {
+    opacity: 0.62;
+
+    font-size: 12px;
+}
+
+
+.mistakes-summary form {
+    margin: 0;
+}
+
+
+.mistakes-start-button {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    min-height: 42px;
+
+    padding: 0 16px;
+
+    color: #fff;
+
+    background: #2f83df;
+
+    border: 1px solid #4292ec;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    font-size: 12px;
+    font-weight: 650;
+}
+
+
+.mistakes-start-button:hover {
+    background: #3c92ef;
+}
+
+
+.mistakes-start-button svg {
+    width: 16px;
+    height: 16px;
+}
+
+
+.mistakes-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 9px;
+}
+
+
+.mistake-card {
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    padding: 14px 16px;
+
+    background: rgba(255, 255, 255, 0.022);
+
+    border: 1px solid rgba(255, 255, 255, 0.07);
+
+    border-radius: 10px;
+}
+
+
+.mistake-card-number {
+    width: 34px;
+    height: 34px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    color: #ffb5bb;
+
+    background: rgba(220, 80, 80, 0.12);
+
+    border-radius: 8px;
+
+    font-size: 11px;
+    font-weight: 750;
+}
+
+
+.mistake-card-content {
+    min-width: 0;
+
+    flex: 1;
+}
+
+
+.mistake-card-topic {
+    margin-bottom: 4px;
+
+    color: inherit;
+
+    opacity: 0.52;
+
+    font-size: 10px;
+}
+
+
+.mistake-card-question {
+    overflow: hidden;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+
+    display: -webkit-box;
+
+    -webkit-line-clamp: 2;
+
+    -webkit-box-orient: vertical;
+}
+
+
+.mistake-card-type {
+    flex-shrink: 0;
+
+    padding: 5px 9px;
+
+    color: inherit;
+
+    opacity: 0.60;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, 0.08);
+
+    border-radius: 6px;
+
+    font-size: 10px;
+}
+
+
+@media (max-width: 650px) {
+
+    .mistakes-summary {
+        align-items: stretch;
+
+        flex-direction: column;
+    }
+
+
+    .mistakes-start-button {
+        width: 100%;
+    }
+
+
+    .mistake-card-type {
+        display: none;
+    }
+
+}

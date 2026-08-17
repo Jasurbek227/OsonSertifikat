@@ -262,10 +262,54 @@ $blockCount = getTableCount($conn, 'blocks');
 
                 </a>
 
-                <a href="question_create.php" class="btn btn-primary admin-action-button" style="font-size: 22px;">
-                    Savol qo‘shish
+
+            </div>
+            <div class="admin-wide-actions">
+
+                <a href="question_create.php" class="admin-wide-action">
+
+                    <span class="admin-wide-action-icon">
+                        <i data-lucide="plus"></i>
+                    </span>
+
+                    <span class="admin-wide-action-content">
+
+                        <strong>
+                            Savol yaratish
+                        </strong>
+
+                        <small>
+                            Yangi test yoki yozma savol qo‘shing
+                        </small>
+
+                    </span>
+
+                    <i data-lucide="arrow-up-right" class="admin-wide-action-arrow"></i>
+
                 </a>
 
+
+                <a href="images.php" class="admin-wide-action">
+
+                    <span class="admin-wide-action-icon">
+                        <i data-lucide="images"></i>
+                    </span>
+
+                    <span class="admin-wide-action-content">
+
+                        <strong>
+                            Rasmlar
+                        </strong>
+
+                        <small>
+                            Rasmlarni yuklang va boshqaring
+                        </small>
+
+                    </span>
+
+                    <i data-lucide="arrow-up-right" class="admin-wide-action-arrow"></i>
+
+                </a>
 
             </div>
 
@@ -280,7 +324,7 @@ $blockCount = getTableCount($conn, 'blocks');
 <script src="https://unpkg.com/lucide@latest"></script>
 
 <script>
-lucide.createIcons();
+    lucide.createIcons();
 </script>
 
 

@@ -197,10 +197,6 @@ if ($result) {
                 Bloklar
             </h1>
 
-            <p class="admin-page-description">
-                20 talik savol bloklarini boshqaring
-            </p>
-
         </div>
 
         <div class="admin-header-actions">
@@ -438,7 +434,7 @@ if ($result) {
                                         'question_count'
                                     ];
                                     ?>
-                            / 20 savol
+                            ta
                         </span>
 
                     </div>
@@ -528,7 +524,7 @@ if ($result) {
             </h3>
 
             <p>
-                Yangi 20 talik blok yaratishingiz mumkin.
+                Yangi blok yaratish.
             </p>
 
             <a href="block_create.php" class="btn btn-primary">

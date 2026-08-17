@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/auth.php';
-
 requireAuth();
 
 require_once __DIR__ . '/../includes/db.php';
@@ -13,27 +12,20 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| Current user
-|--------------------------------------------------------------------------
-*/
+$userId = isset($_SESSION['user_id'])
+    ? (int) $_SESSION['user_id']
+    : 0;
 
-if (!isset($_SESSION['user_id'])) {
+$blockId = isset($_GET['id'])
+    ? (int) $_GET['id']
+    : 0;
+
+
+if ($userId <= 0) {
     header('Location: login.php');
     exit;
 }
 
-$userId = (int) $_SESSION['user_id'];
-
-
-/*
-|--------------------------------------------------------------------------
-| Block ID
-|--------------------------------------------------------------------------
-*/
-
-$blockId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
 if ($blockId <= 0) {
     header('Location: blocks.php');
@@ -53,7 +45,10 @@ if (
     $_POST['action'] === 'answer'
 ) {
 
-    header('Content-Type: application/json; charset=utf-8');
+    header(
+        'Content-Type: application/json; charset=utf-8'
+    );
+
 
     $sessionId = isset($_POST['session_id'])
         ? (int) $_POST['session_id']
@@ -67,15 +62,24 @@ if (
         ? trim((string) $_POST['answer'])
         : '';
 
+    $answerA = isset($_POST['answer_a'])
+        ? trim((string) $_POST['answer_a'])
+        : '';
+
+    $answerB = isset($_POST['answer_b'])
+        ? trim((string) $_POST['answer_b'])
+        : '';
+
+
     if (
         $sessionId <= 0 ||
-        $questionId <= 0 ||
-        $answer === ''
+        $questionId <= 0
     ) {
+
         echo json_encode([
             'success' => false,
             'message' => 'Noto‘g‘ri so‘rov.'
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
 
         exit;
     }
@@ -83,7 +87,7 @@ if (
 
     /*
     |--------------------------------------------------------------------------
-    | Verify active session belongs to current user and block
+    | Verify session
     |--------------------------------------------------------------------------
     */
 
@@ -100,26 +104,41 @@ if (
         LIMIT 1
     ";
 
-    $sessionResult = mysqli_query($conn, $sessionQuery);
+    $sessionResult =
+        mysqli_query(
+            $conn,
+            $sessionQuery
+        );
 
-    if (!$sessionResult || mysqli_num_rows($sessionResult) === 0) {
+
+    if (
+        !$sessionResult ||
+        mysqli_num_rows($sessionResult) === 0
+    ) {
 
         echo json_encode([
             'success' => false,
             'message' => 'Sessiya topilmadi.'
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
 
         exit;
     }
 
-    $session = mysqli_fetch_assoc($sessionResult);
 
-    if ($session['status'] !== 'active') {
+    $session =
+        mysqli_fetch_assoc(
+            $sessionResult
+        );
+
+
+    if (
+        $session['status'] !== 'active'
+    ) {
 
         echo json_encode([
             'success' => false,
             'message' => 'Ushbu blok sessiyasi faol emas.'
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
 
         exit;
     }
@@ -127,7 +146,7 @@ if (
 
     /*
     |--------------------------------------------------------------------------
-    | Verify question belongs to this block
+    | Verify question belongs to block
     |--------------------------------------------------------------------------
     */
 
@@ -137,17 +156,29 @@ if (
             q.question_type,
             q.correct_answer,
             q.part_a_correct_answer,
-            q.part_b_correct_answer
+            q.part_b_correct_answer,
+            q.part_a_text,
+            q.part_b_text
+
         FROM block_questions bq
+
         INNER JOIN questions q
             ON q.id = bq.question_id
+
         WHERE bq.block_id = $blockId
           AND q.id = $questionId
           AND q.is_active = 1
+
         LIMIT 1
     ";
 
-    $questionResult = mysqli_query($conn, $questionQuery);
+
+    $questionResult =
+        mysqli_query(
+            $conn,
+            $questionQuery
+        );
+
 
     if (
         !$questionResult ||
@@ -157,21 +188,25 @@ if (
         echo json_encode([
             'success' => false,
             'message' => 'Savol topilmadi.'
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
 
         exit;
     }
 
-    $question = mysqli_fetch_assoc($questionResult);
+
+    $question =
+        mysqli_fetch_assoc(
+            $questionResult
+        );
 
 
     /*
     |--------------------------------------------------------------------------
-    | Check whether this question was already answered
+    | Prevent second answer
     |--------------------------------------------------------------------------
     */
 
-    $answerCheckQuery = "
+    $existingQuery = "
         SELECT
             id,
             is_correct
@@ -182,25 +217,31 @@ if (
         LIMIT 1
     ";
 
-    $answerCheckResult = mysqli_query(
-        $conn,
-        $answerCheckQuery
-    );
+
+    $existingResult =
+        mysqli_query(
+            $conn,
+            $existingQuery
+        );
+
 
     if (
-        $answerCheckResult &&
-        mysqli_num_rows($answerCheckResult) > 0
+        $existingResult &&
+        mysqli_num_rows($existingResult) > 0
     ) {
 
-        $existingAttempt = mysqli_fetch_assoc(
-            $answerCheckResult
-        );
+        $existing =
+            mysqli_fetch_assoc(
+                $existingResult
+            );
+
 
         echo json_encode([
             'success' => true,
             'already_answered' => true,
-            'is_correct' => (bool) $existingAttempt['is_correct']
-        ]);
+            'is_correct' =>
+                (bool) $existing['is_correct']
+        ], JSON_UNESCAPED_UNICODE);
 
         exit;
     }
@@ -214,217 +255,373 @@ if (
 
     $isCorrect = false;
 
-    if ($question['question_type'] === 'multiple_choice') {
+    $storedAnswer = '';
 
-        $correctAnswer = trim(
-            (string) $question['correct_answer']
-        );
 
-        $isCorrect = (
+    if (
+        $question['question_type'] === 'multiple_choice' ||
+        $question['question_type'] === 'six_option'
+    ) {
+
+        if ($answer === '') {
+
+            echo json_encode([
+                'success' => false,
+                'message' => 'Variantni tanlang.'
+            ], JSON_UNESCAPED_UNICODE);
+
+            exit;
+        }
+
+
+        $correctAnswer =
+            trim(
+                (string) 
+                $question['correct_answer']
+            );
+
+
+        $isCorrect =
             strcasecmp(
                 $answer,
                 $correctAnswer
-            ) === 0
-        );
-    } elseif ($question['question_type'] === 'six_option') {
+            ) === 0;
 
-        $correctAnswer = trim(
-            (string) $question['correct_answer']
-        );
 
-        $isCorrect = (
-            strcasecmp(
-                $answer,
-                $correctAnswer
-            ) === 0
-        );
-    } elseif ($question['question_type'] === 'written') {
+        $storedAnswer =
+            $answer;
 
-        /*
-         * Written answers are compared as text.
-         * More advanced numeric tolerance can be added later.
-         */
+    } elseif (
+        $question['question_type'] === 'written'
+    ) {
 
-        $correctAnswer = trim(
-            (string) $question['correct_answer']
-        );
+        $hasPartA =
+            trim(
+                (string) 
+                $question['part_a_text']
+            ) !== '';
 
-        $isCorrect = (
-            strcasecmp(
-                $answer,
-                $correctAnswer
-            ) === 0
-        );
+        $hasPartB =
+            trim(
+                (string) 
+                $question['part_b_text']
+            ) !== '';
+
+
+        if (
+            !$hasPartA &&
+            !$hasPartB
+        ) {
+
+            echo json_encode([
+                'success' => false,
+                'message' => 'Yozma savol noto‘g‘ri sozlangan.'
+            ], JSON_UNESCAPED_UNICODE);
+
+            exit;
+        }
+
+
+        $partAIsCorrect = true;
+        $partBIsCorrect = true;
+
+
+        if ($hasPartA) {
+
+            if ($answerA === '') {
+
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'A qism javobini kiriting.'
+                ], JSON_UNESCAPED_UNICODE);
+
+                exit;
+            }
+
+
+            $correctA =
+                trim(
+                    (string) 
+                    $question[
+                        'part_a_correct_answer'
+                    ]
+                );
+
+
+            $partAIsCorrect =
+                strcasecmp(
+                    $answerA,
+                    $correctA
+                ) === 0;
+        }
+
+
+        if ($hasPartB) {
+
+            if ($answerB === '') {
+
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'B qism javobini kiriting.'
+                ], JSON_UNESCAPED_UNICODE);
+
+                exit;
+            }
+
+
+            $correctB =
+                trim(
+                    (string) 
+                    $question[
+                        'part_b_correct_answer'
+                    ]
+                );
+
+
+            $partBIsCorrect =
+                strcasecmp(
+                    $answerB,
+                    $correctB
+                ) === 0;
+        }
+
+
+        $isCorrect =
+            $partAIsCorrect &&
+            $partBIsCorrect;
+
+
+        $storedAnswer =
+            json_encode(
+                [
+                    'a' => $answerA,
+                    'b' => $answerB
+                ],
+                JSON_UNESCAPED_UNICODE
+            );
     }
 
 
     /*
     |--------------------------------------------------------------------------
-    | Escape answer
+    | Save attempt + mistake queue atomically
     |--------------------------------------------------------------------------
     */
 
-    $safeAnswer = mysqli_real_escape_string(
-        $conn,
-        $answer
+    $safeAnswer =
+        mysqli_real_escape_string(
+            $conn,
+            $storedAnswer
+        );
+
+
+    mysqli_begin_transaction(
+        $conn
     );
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Save attempt
-    |--------------------------------------------------------------------------
-    */
+    try {
 
-    $attemptQuery = "
-        INSERT INTO attempts (
-            user_id,
-            question_id,
-            block_session_id,
-            answer,
-            is_correct
-        )
-        VALUES (
-            $userId,
-            $questionId,
-            $sessionId,
-            '$safeAnswer',
-            " . ($isCorrect ? '1' : '0') . "
-        )
-    ";
-
-    $attemptResult = mysqli_query(
-        $conn,
-        $attemptQuery
-    );
-
-    if (!$attemptResult) {
-
-        echo json_encode([
-            'success' => false,
-            'message' => 'Javobni saqlashda xatolik.'
-        ]);
-
-        exit;
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Wrong answer -> mistake queue
-    |--------------------------------------------------------------------------
-    */
-
-    if (!$isCorrect) {
-
-        $mistakeQuery = "
-            INSERT IGNORE INTO mistake_queue (
+        $attemptQuery = "
+            INSERT INTO attempts (
                 user_id,
-                question_id
+                question_id,
+                block_session_id,
+                answer,
+                is_correct
             )
             VALUES (
                 $userId,
-                $questionId
+                $questionId,
+                $sessionId,
+                '$safeAnswer',
+                " .
+            (
+                $isCorrect
+                ? '1'
+                : '0'
+            ) .
+            "
             )
         ";
 
-        mysqli_query(
-            $conn,
-            $mistakeQuery
-        );
-    }
+
+        if (
+            !mysqli_query(
+                $conn,
+                $attemptQuery
+            )
+        ) {
+
+            throw new RuntimeException(
+                mysqli_error($conn)
+            );
+        }
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Count answered questions
-    |--------------------------------------------------------------------------
-    */
+        if ($isCorrect) {
 
-    $answeredQuery = "
-        SELECT COUNT(DISTINCT question_id) AS answered_count
-        FROM attempts
-        WHERE user_id = $userId
-          AND block_session_id = $sessionId
-    ";
-
-    $answeredResult = mysqli_query(
-        $conn,
-        $answeredQuery
-    );
-
-    $answeredCount = 0;
-
-    if ($answeredResult) {
-
-        $answeredRow = mysqli_fetch_assoc(
-            $answeredResult
-        );
-
-        $answeredCount = (int) $answeredRow['answered_count'];
-    }
+            $removeMistakeQuery = "
+                DELETE FROM mistake_queue
+                WHERE user_id = $userId
+                  AND question_id = $questionId
+            ";
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Count correct answers
-    |--------------------------------------------------------------------------
-    */
+            if (
+                !mysqli_query(
+                    $conn,
+                    $removeMistakeQuery
+                )
+            ) {
 
-    $correctQuery = "
-        SELECT COUNT(DISTINCT question_id) AS correct_count
-        FROM attempts
-        WHERE user_id = $userId
-          AND block_session_id = $sessionId
-          AND is_correct = 1
-    ";
+                throw new RuntimeException(
+                    mysqli_error($conn)
+                );
+            }
 
-    $correctResult = mysqli_query(
-        $conn,
-        $correctQuery
-    );
+        } else {
 
-    $correctCount = 0;
-
-    if ($correctResult) {
-
-        $correctRow = mysqli_fetch_assoc(
-            $correctResult
-        );
-
-        $correctCount = (int) $correctRow['correct_count'];
-    }
+            $addMistakeQuery = "
+                INSERT IGNORE INTO mistake_queue (
+                    user_id,
+                    question_id
+                )
+                VALUES (
+                    $userId,
+                    $questionId
+                )
+            ";
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | Finish automatically after all questions answered
-    |--------------------------------------------------------------------------
-    */
+            if (
+                !mysqli_query(
+                    $conn,
+                    $addMistakeQuery
+                )
+            ) {
 
-    $totalQuestions = (int) $session['total_questions'];
+                throw new RuntimeException(
+                    mysqli_error($conn)
+                );
+            }
+        }
 
-    $finished = (
-        $answeredCount >= $totalQuestions
-    );
 
-    if ($finished) {
+        /*
+        |--------------------------------------------------------------------------
+        | Count progress
+        |--------------------------------------------------------------------------
+        */
 
-        $finishQuery = "
-            UPDATE block_sessions
-            SET
-                status = 'completed',
-                finished_at = NOW(),
-                score = $correctCount
-            WHERE id = $sessionId
-              AND user_id = $userId
-              AND status = 'active'
+        $progressQuery = "
+            SELECT
+                COUNT(DISTINCT question_id) AS answered_count,
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN is_correct = 1
+                            THEN 1
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS correct_count
+            FROM attempts
+            WHERE user_id = $userId
+              AND block_session_id = $sessionId
         ";
 
-        mysqli_query(
-            $conn,
-            $finishQuery
+
+        $progressResult =
+            mysqli_query(
+                $conn,
+                $progressQuery
+            );
+
+
+        $answeredCount = 0;
+        $correctCount = 0;
+
+
+        if ($progressResult) {
+
+            $progress =
+                mysqli_fetch_assoc(
+                    $progressResult
+                );
+
+
+            $answeredCount =
+                (int) 
+                $progress['answered_count'];
+
+
+            $correctCount =
+                (int) 
+                $progress['correct_count'];
+        }
+
+
+        $totalQuestions =
+            (int) 
+            $session['total_questions'];
+
+
+        $finished =
+            $answeredCount >=
+            $totalQuestions;
+
+
+        if ($finished) {
+
+            $finishQuery = "
+                UPDATE block_sessions
+                SET
+                    status = 'completed',
+                    finished_at = NOW(),
+                    score = $correctCount
+                WHERE id = $sessionId
+                  AND user_id = $userId
+                  AND status = 'active'
+            ";
+
+
+            if (
+                !mysqli_query(
+                    $conn,
+                    $finishQuery
+                )
+            ) {
+
+                throw new RuntimeException(
+                    mysqli_error($conn)
+                );
+            }
+        }
+
+
+        mysqli_commit(
+            $conn
         );
+
+
+    } catch (
+        Throwable $exception
+    ) {
+
+        mysqli_rollback(
+            $conn
+        );
+
+
+        echo json_encode([
+            'success' => false,
+            'message' =>
+                'Javobni saqlashda xatolik.'
+        ], JSON_UNESCAPED_UNICODE);
+
+        exit;
     }
 
 
@@ -436,7 +633,7 @@ if (
         'correct_count' => $correctCount,
         'total_questions' => $totalQuestions,
         'finished' => $finished
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
 
     exit;
 }
@@ -454,149 +651,196 @@ $blockQuery = "
         name,
         description,
         generation
+
     FROM blocks
+
     WHERE id = $blockId
       AND is_active = 1
+
     LIMIT 1
 ";
 
-$blockResult = mysqli_query(
-    $conn,
-    $blockQuery
-);
+
+$blockResult =
+    mysqli_query(
+        $conn,
+        $blockQuery
+    );
+
 
 if (
     !$blockResult ||
     mysqli_num_rows($blockResult) === 0
 ) {
+
     header('Location: blocks.php');
     exit;
 }
 
-$block = mysqli_fetch_assoc($blockResult);
+
+$block =
+    mysqli_fetch_assoc(
+        $blockResult
+    );
 
 
 /*
 |--------------------------------------------------------------------------
-| Load block questions
+| Load active questions
 |--------------------------------------------------------------------------
 */
 
-$questions = array();
+$questions = [];
+
 
 $questionsQuery = "
     SELECT
         q.id,
         q.question_type,
         q.text,
-        q.correct_answer,
-        bq.id AS block_question_id
+        q.part_a_text,
+        q.part_b_text
+
     FROM block_questions bq
+
     INNER JOIN questions q
         ON q.id = bq.question_id
+
     WHERE bq.block_id = $blockId
       AND q.is_active = 1
+
     ORDER BY bq.id ASC
 ";
 
-$questionsResult = mysqli_query(
-    $conn,
-    $questionsQuery
-);
+
+$questionsResult =
+    mysqli_query(
+        $conn,
+        $questionsQuery
+    );
+
 
 if ($questionsResult) {
 
-    while ($row = mysqli_fetch_assoc($questionsResult)) {
+    while (
+        $row =
+        mysqli_fetch_assoc(
+            $questionsResult
+        )
+    ) {
 
-        $questionId = (int) $row['id'];
+        $questionId =
+            (int) $row['id'];
+
 
         /*
-         * Load options.
-         */
+        |--------------------------------------------------------------------------
+        | Options
+        |--------------------------------------------------------------------------
+        */
 
-        $row['options'] = array();
+        $row['options'] = [];
 
-        $optionsQuery = "
-            SELECT
-                option_key,
-                option_text
-            FROM question_options
-            WHERE question_id = $questionId
-            ORDER BY option_key ASC
-        ";
 
-        $optionsResult = mysqli_query(
-            $conn,
-            $optionsQuery
-        );
+        $optionsResult =
+            mysqli_query(
+                $conn,
+                "
+                SELECT
+                    option_key,
+                    option_text
+                FROM question_options
+                WHERE question_id = $questionId
+                ORDER BY option_key ASC
+                "
+            );
+
 
         if ($optionsResult) {
 
-            while ($option = mysqli_fetch_assoc(
-                $optionsResult
-            )) {
+            while (
+                $option =
+                mysqli_fetch_assoc(
+                    $optionsResult
+                )
+            ) {
 
-                $row['options'][] = $option;
+                $row['options'][] =
+                    $option;
             }
         }
 
 
         /*
-         * Load optional images.
-         */
+        |--------------------------------------------------------------------------
+        | Images
+        |--------------------------------------------------------------------------
+        */
 
-        $row['images'] = array();
+        $row['images'] = [];
 
-        $imagesQuery = "
-            SELECT
-                file_path
-            FROM question_images
-            WHERE question_id = $questionId
-            ORDER BY id ASC
-        ";
 
-        $imagesResult = mysqli_query(
-            $conn,
-            $imagesQuery
-        );
+        $imagesResult =
+            mysqli_query(
+                $conn,
+                "
+                SELECT file_path
+                FROM question_images
+                WHERE question_id = $questionId
+                ORDER BY id ASC
+                "
+            );
+
 
         if ($imagesResult) {
 
-            while ($image = mysqli_fetch_assoc(
-                $imagesResult
-            )) {
+            while (
+                $image =
+                mysqli_fetch_assoc(
+                    $imagesResult
+                )
+            ) {
 
-                $row['images'][] = $image['file_path'];
+                $row['images'][] =
+                    $image['file_path'];
             }
         }
 
 
-        $questions[] = $row;
+        $questions[] =
+            $row;
     }
 }
 
 
-$totalQuestions = count($questions);
+$totalQuestions =
+    count($questions);
+
 
 if ($totalQuestions === 0) {
 
     require_once __DIR__ . '/../layout/header.php';
 
-?>
+    ?>
+
+    <link rel="stylesheet" href="assets/css/style.css">
 
     <section class="page-section">
 
         <a href="blocks.php" class="page-back">
-            <span class="page-back-icon">←</span>
-            <span>Orqaga</span>
+            ← Orqaga
         </a>
 
         <div class="blocks-content">
 
-            <div>
+            <div class="blocks-empty">
+
+                <div class="blocks-empty-icon">
+                    <i data-lucide="clipboard-x"></i>
+                </div>
 
                 <h3>
-                    Ushbu blokda savollar mavjud emas.
+                    Ushbu blokda faol savollar mavjud emas.
                 </h3>
 
             </div>
@@ -605,7 +849,24 @@ if ($totalQuestions === 0) {
 
     </section>
 
-<?php
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        document.addEventListener(
+            'DOMContentLoaded',
+            function () {
+
+                if (
+                    typeof lucide !== 'undefined'
+                ) {
+                    lucide.createIcons();
+                }
+
+            }
+        );
+    </script>
+
+    <?php
 
     require_once __DIR__ . '/../layout/footer.php';
 
@@ -615,16 +876,17 @@ if ($totalQuestions === 0) {
 
 /*
 |--------------------------------------------------------------------------
-| Find active block session
+| Active block session
 |--------------------------------------------------------------------------
 */
 
 $sessionId = 0;
 
+
 $activeSessionQuery = "
     SELECT
         id,
-        status
+        total_questions
     FROM block_sessions
     WHERE user_id = $userId
       AND block_id = $blockId
@@ -633,26 +895,32 @@ $activeSessionQuery = "
     LIMIT 1
 ";
 
-$activeSessionResult = mysqli_query(
-    $conn,
-    $activeSessionQuery
-);
+
+$activeSessionResult =
+    mysqli_query(
+        $conn,
+        $activeSessionQuery
+    );
+
 
 if (
     $activeSessionResult &&
-    mysqli_num_rows($activeSessionResult) > 0
+    mysqli_num_rows(
+        $activeSessionResult
+    ) > 0
 ) {
 
-    $activeSession = mysqli_fetch_assoc(
-        $activeSessionResult
-    );
+    $activeSession =
+        mysqli_fetch_assoc(
+            $activeSessionResult
+        );
 
-    $sessionId = (int) $activeSession['id'];
+
+    $sessionId =
+        (int) 
+        $activeSession['id'];
+
 } else {
-
-    /*
-     * Create a new block session.
-     */
 
     $createSessionQuery = "
         INSERT INTO block_sessions (
@@ -667,164 +935,204 @@ if (
         )
     ";
 
-    $createSessionResult = mysqli_query(
-        $conn,
-        $createSessionQuery
-    );
-
-    if (!$createSessionResult) {
-
-        die('Block session yaratishda xatolik: ' .
-            mysqli_error($conn));
-    }
-
-    $sessionId = (int) mysqli_insert_id($conn);
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| Determine current question
-|--------------------------------------------------------------------------
-|
-| The user can return to already answered questions.
-| They cannot skip an unanswered question.
-|
-*/
-
-$answeredIds = array();
-
-$answeredQuery = "
-    SELECT DISTINCT question_id
-    FROM attempts
-    WHERE user_id = $userId
-      AND block_session_id = $sessionId
-";
-
-$answeredResult = mysqli_query(
-    $conn,
-    $answeredQuery
-);
-
-if ($answeredResult) {
-
-    while ($answeredRow = mysqli_fetch_assoc(
-        $answeredResult
-    )) {
-
-        $answeredIds[] = (int) $answeredRow['question_id'];
-    }
-}
-
-
-/*
- * Current position is stored in the PHP session.
- */
-
-$positionKey = 'block_position_' . $sessionId;
-
-if (!isset($_SESSION[$positionKey])) {
-    $_SESSION[$positionKey] = 0;
-}
-
-$currentPosition = (int) $_SESSION[$positionKey];
-
-if ($currentPosition < 0) {
-    $currentPosition = 0;
-}
-
-if ($currentPosition >= $totalQuestions) {
-    $currentPosition = $totalQuestions - 1;
-}
-
-
-/*
-|--------------------------------------------------------------------------
-| Find first unanswered question
-|--------------------------------------------------------------------------
-*/
-
-$firstUnanswered = 0;
-
-foreach ($questions as $index => $question) {
 
     if (
-        !in_array(
-            (int) $question['id'],
-            $answeredIds,
-            true
+        !mysqli_query(
+            $conn,
+            $createSessionQuery
         )
     ) {
 
-        $firstUnanswered = $index;
-        break;
+        die(
+            'Block sessiya yaratishda xatolik: ' .
+            mysqli_error($conn)
+        );
     }
-}
 
 
-/*
- * If current position is ahead of the first unanswered
- * question, move it back.
- */
-
-if (
-    $firstUnanswered > 0 &&
-    $currentPosition > $firstUnanswered
-) {
-    $currentPosition = $firstUnanswered;
+    $sessionId =
+        (int) 
+        mysqli_insert_id(
+            $conn
+        );
 }
 
 
 /*
 |--------------------------------------------------------------------------
-| Selected answers
+| Existing answers
 |--------------------------------------------------------------------------
 */
 
-$selectedAnswers = array();
+$selectedAnswers = [];
+
 
 $selectedQuery = "
     SELECT
         question_id,
         answer,
         is_correct
+
     FROM attempts
+
     WHERE user_id = $userId
       AND block_session_id = $sessionId
 ";
 
-$selectedResult = mysqli_query(
-    $conn,
-    $selectedQuery
-);
+
+$selectedResult =
+    mysqli_query(
+        $conn,
+        $selectedQuery
+    );
+
 
 if ($selectedResult) {
 
-    while ($selectedRow = mysqli_fetch_assoc(
-        $selectedResult
-    )) {
+    while (
+        $row =
+        mysqli_fetch_assoc(
+            $selectedResult
+        )
+    ) {
 
-        $selectedAnswers[(int) $selectedRow['question_id']] = $selectedRow;
+        $selectedAnswers[
+            (int) 
+            $row['question_id']
+        ] =
+            $row;
     }
 }
 
 
-$_SESSION[$positionKey] = $currentPosition;
+$answeredIds =
+    array_keys(
+        $selectedAnswers
+    );
 
-$currentQuestion = $questions[$currentPosition];
 
-$pageTitle = $block['name'];
+/*
+|--------------------------------------------------------------------------
+| Current position
+|--------------------------------------------------------------------------
+*/
+
+$positionKey =
+    'block_position_' .
+    $sessionId;
+
+
+if (
+    !isset(
+    $_SESSION[$positionKey]
+)
+) {
+
+    $_SESSION[$positionKey] =
+        0;
+}
+
+
+$currentPosition =
+    (int) 
+    $_SESSION[$positionKey];
+
+
+$currentPosition =
+    max(
+        0,
+        min(
+            $currentPosition,
+            $totalQuestions - 1
+        )
+    );
+
+
+/*
+|--------------------------------------------------------------------------
+| First unanswered
+|--------------------------------------------------------------------------
+*/
+
+$firstUnanswered =
+    $totalQuestions;
+
+
+foreach (
+    $questions
+    as $index => $question
+) {
+
+    if (
+        !isset(
+        $selectedAnswers[
+            (int) 
+            $question['id']
+        ]
+    )
+    ) {
+
+        $firstUnanswered =
+            $index;
+
+        break;
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Prevent skipping forward
+|--------------------------------------------------------------------------
+*/
+
+if (
+    $firstUnanswered <
+    $totalQuestions &&
+    $currentPosition >
+    $firstUnanswered
+) {
+
+    $currentPosition =
+        $firstUnanswered;
+}
+
+
+$_SESSION[$positionKey] =
+    $currentPosition;
+
+
+$currentQuestion =
+    $questions[
+        $currentPosition
+    ];
+
+
+/*
+|--------------------------------------------------------------------------
+| Page
+|--------------------------------------------------------------------------
+*/
+
+$pageTitle =
+    $block['name'];
+
 
 require_once __DIR__ . '/../layout/header.php';
 
 ?>
+
 <link rel="stylesheet" href="assets/css/style.css">
 
-<section class="page-section block-solving-page" data-block-id="<?php echo $blockId; ?>"
-    data-session-id="<?php echo $sessionId; ?>" data-total-questions="<?php echo $totalQuestions; ?>">
 
+<section class="page-section block-solving-page" data-block-id="<?php
+echo $blockId;
+?>" data-session-id="<?php
+echo $sessionId;
+?>" data-total-questions="<?php
+echo $totalQuestions;
+?>">
 
-    <!-- Header -->
 
     <div class="block-solving-header">
 
@@ -855,7 +1163,12 @@ require_once __DIR__ . '/../layout/header.php';
 
             </h1>
 
-            <?php if (!empty($block['description'])): ?>
+
+            <?php if (
+                !empty(
+                $block['description']
+            )
+            ): ?>
 
                 <p class="page-description">
 
@@ -876,8 +1189,6 @@ require_once __DIR__ . '/../layout/header.php';
     </div>
 
 
-    <!-- Progress -->
-
     <div class="block-progress">
 
         <div class="block-progress-top">
@@ -887,9 +1198,17 @@ require_once __DIR__ . '/../layout/header.php';
             </span>
 
             <strong id="questionCounter">
-                <?php echo $currentPosition + 1; ?>
+
+                <?php
+                echo $currentPosition + 1;
+                ?>
+
                 /
-                <?php echo $totalQuestions; ?>
+
+                <?php
+                echo $totalQuestions;
+                ?>
+
             </strong>
 
         </div>
@@ -897,27 +1216,30 @@ require_once __DIR__ . '/../layout/header.php';
 
         <div class="block-progress-bar">
 
-            <div class="block-progress-fill" id="blockProgressFill" style="width:
-                    <?php
-                    echo (
-                        (($currentPosition + 1) /
-                            $totalQuestions) * 100
-                    );
-                    ?>%;"></div>
+            <div class="block-progress-fill" id="blockProgressFill" style="width: <?php
+            echo (
+                (
+                    $currentPosition + 1
+                )
+                /
+                $totalQuestions
+            ) * 100;
+            ?>%;"></div>
 
         </div>
 
     </div>
 
 
-    <!-- Question -->
-
-    <div class="question-card" id="questionCard" data-question-id="<?php echo (int) $currentQuestion['id']; ?>">
+    <div class="question-card" id="questionCard" data-question-id="<?php
+    echo (int) 
+        $currentQuestion['id'];
+    ?>">
 
         <div class="question-number">
-
-            <?php echo $currentPosition + 1; ?>
-
+            <?php
+            echo $currentPosition + 1;
+            ?>
         </div>
 
 
@@ -936,9 +1258,11 @@ require_once __DIR__ . '/../layout/header.php';
         </div>
 
 
-        <!-- Images -->
-
-        <?php if (count($currentQuestion['images']) > 0): ?>
+        <?php if (
+            count(
+                $currentQuestion['images']
+            ) > 0
+        ): ?>
 
             <div class="question-images">
 
@@ -948,12 +1272,12 @@ require_once __DIR__ . '/../layout/header.php';
                 ): ?>
 
                     <img src="<?php
-                                echo htmlspecialchars(
-                                    $imagePath,
-                                    ENT_QUOTES,
-                                    'UTF-8'
-                                );
-                                ?>" alt="" class="question-image">
+                    echo htmlspecialchars(
+                        $imagePath,
+                        ENT_QUOTES,
+                        'UTF-8'
+                    );
+                    ?>" alt="" class="question-image">
 
                 <?php endforeach; ?>
 
@@ -962,7 +1286,19 @@ require_once __DIR__ . '/../layout/header.php';
         <?php endif; ?>
 
 
-        <!-- Options -->
+        <?php
+
+        $currentQuestionId =
+            (int) 
+            $currentQuestion['id'];
+
+        $currentAttempt =
+            $selectedAnswers[
+                $currentQuestionId
+            ] ?? null;
+
+        ?>
+
 
         <?php if (
             $currentQuestion['question_type'] ===
@@ -970,6 +1306,7 @@ require_once __DIR__ . '/../layout/header.php';
             $currentQuestion['question_type'] ===
             'six_option'
         ): ?>
+
 
             <div class="question-options">
 
@@ -979,50 +1316,40 @@ require_once __DIR__ . '/../layout/header.php';
                 ): ?>
 
                     <?php
-
-                    $optionKey = $option['option_key'];
-
-                    $selected = (
-                        isset(
-                            $selectedAnswers[(int) $currentQuestion['id']]
-                        ) &&
-                        $selectedAnswers[(int) $currentQuestion['id']]['answer'] === $optionKey
-                    );
-
+                    $selected =
+                        $currentAttempt &&
+                        $currentAttempt['answer'] ===
+                        $option['option_key'];
                     ?>
 
-                    <button type="button" class="question-option
-                        <?php
-                        echo $selected
-                            ? ' question-option-selected'
-                            : '';
-                        ?>" data-answer="<?php
-                                            echo htmlspecialchars(
-                                                $optionKey,
-                                                ENT_QUOTES,
-                                                'UTF-8'
-                                            );
-                                            ?>" <?php
-                                                echo $selected
-                                                    ? 'disabled'
-                                                    : '';
-                                                ?>>
+                    <button type="button" class="question-option <?php
+                    echo $selected
+                        ? 'question-option-selected'
+                        : '';
+                    ?>" data-answer="<?php
+                    echo htmlspecialchars(
+                        $option['option_key'],
+                        ENT_QUOTES,
+                        'UTF-8'
+                    );
+                    ?>" <?php
+                    echo $currentAttempt
+                        ? 'disabled'
+                        : '';
+                    ?>>
 
                         <span class="question-option-key">
-
                             <?php
                             echo htmlspecialchars(
-                                $optionKey,
+                                $option['option_key'],
                                 ENT_QUOTES,
                                 'UTF-8'
                             );
                             ?>
-
                         </span>
 
 
                         <span class="question-option-text">
-
                             <?php
                             echo nl2br(
                                 htmlspecialchars(
@@ -1032,7 +1359,6 @@ require_once __DIR__ . '/../layout/header.php';
                                 )
                             );
                             ?>
-
                         </span>
 
                     </button>
@@ -1048,46 +1374,157 @@ require_once __DIR__ . '/../layout/header.php';
         ): ?>
 
 
-            <div class="question-written">
+            <?php
 
-                <?php
+            $savedWritten = [
+                'a' => '',
+                'b' => ''
+            ];
 
-                $existingAnswer = '';
+
+            if (
+                $currentAttempt &&
+                !empty(
+                $currentAttempt['answer']
+            )
+            ) {
+
+                $decoded =
+                    json_decode(
+                        (string) 
+                        $currentAttempt['answer'],
+                        true
+                    );
+
 
                 if (
-                    isset(
-                        $selectedAnswers[(int) $currentQuestion['id']]
-                    )
+                    is_array($decoded)
                 ) {
 
-                    $existingAnswer =
-                        $selectedAnswers[(int) $currentQuestion['id']]['answer'];
+                    $savedWritten['a'] =
+                        (string) 
+                        (
+                            $decoded['a']
+                            ?? ''
+                        );
+
+                    $savedWritten['b'] =
+                        (string) 
+                        (
+                            $decoded['b']
+                            ?? ''
+                        );
                 }
+            }
 
-                ?>
+            ?>
 
 
-                <input type="text" class="question-answer-input" id="writtenAnswer" placeholder="Javobingizni kiriting"
-                    value="<?php
-                            echo htmlspecialchars(
-                                $existingAnswer,
-                                ENT_QUOTES,
-                                'UTF-8'
+            <div class="question-written">
+
+
+                <?php if (
+                    trim(
+                        (string) 
+                        $currentQuestion['part_a_text']
+                    ) !== ''
+                ): ?>
+
+                    <div class="question-written-part">
+
+                        <div class="question-written-part-title">
+                            A
+                        </div>
+
+
+                        <div class="question-written-part-text">
+
+                            <?php
+                            echo nl2br(
+                                htmlspecialchars(
+                                    $currentQuestion['part_a_text'],
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                )
                             );
-                            ?>" <?php
-                                echo $existingAnswer !== ''
-                                    ? 'disabled'
-                                    : '';
-                                ?>>
+                            ?>
+
+                        </div>
 
 
-                <?php if ($existingAnswer === ''): ?>
+                        <input type="text" class="question-answer-input" id="writtenAnswerA" placeholder="A qism javobi" value="<?php
+                        echo htmlspecialchars(
+                            $savedWritten['a'],
+                            ENT_QUOTES,
+                            'UTF-8'
+                        );
+                        ?>" <?php
+                        echo $currentAttempt
+                            ? 'disabled'
+                            : '';
+                        ?>>
+
+                    </div>
+
+                <?php endif; ?>
+
+
+                <?php if (
+                    trim(
+                        (string) 
+                        $currentQuestion['part_b_text']
+                    ) !== ''
+                ): ?>
+
+                    <div class="question-written-part">
+
+                        <div class="question-written-part-title">
+                            B
+                        </div>
+
+
+                        <div class="question-written-part-text">
+
+                            <?php
+                            echo nl2br(
+                                htmlspecialchars(
+                                    $currentQuestion['part_b_text'],
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                )
+                            );
+                            ?>
+
+                        </div>
+
+
+                        <input type="text" class="question-answer-input" id="writtenAnswerB" placeholder="B qism javobi" value="<?php
+                        echo htmlspecialchars(
+                            $savedWritten['b'],
+                            ENT_QUOTES,
+                            'UTF-8'
+                        );
+                        ?>" <?php
+                        echo $currentAttempt
+                            ? 'disabled'
+                            : '';
+                        ?>>
+
+                    </div>
+
+                <?php endif; ?>
+
+
+                <?php if (
+                    !$currentAttempt
+                ): ?>
 
                     <button type="button" class="question-answer-submit" id="writtenAnswerSubmit">
                         Javobni yuborish
                     </button>
 
                 <?php endif; ?>
+
 
             </div>
 
@@ -1097,45 +1534,36 @@ require_once __DIR__ . '/../layout/header.php';
     </div>
 
 
-    <!-- Navigation -->
-
     <div class="question-navigation">
 
         <button type="button" class="question-navigation-button" id="previousQuestion" <?php
-                                                                                        echo $currentPosition <= 0
-                                                                                            ? 'disabled'
-                                                                                            : '';
-                                                                                        ?>>
-
+        echo $currentPosition <= 0
+            ? 'disabled'
+            : '';
+        ?>>
             ← Oldingi
-
         </button>
 
 
         <button type="button" class="question-navigation-button" id="nextQuestion" <?php
+        echo $currentAttempt
+            ? ''
+            : 'disabled';
+        ?>>
 
-                                                                                    $currentAnswered = in_array(
-                                                                                        (int) $currentQuestion['id'],
-                                                                                        $answeredIds,
-                                                                                        true
-                                                                                    );
-
-                                                                                    echo !$currentAnswered
-                                                                                        ? 'disabled'
-                                                                                        : '';
-
-                                                                                    ?>>
-
-            Keyingi →
+            <?php
+            echo $currentPosition >=
+                $totalQuestions - 1
+                ? 'Tugatish'
+                : 'Keyingi →';
+            ?>
 
         </button>
 
     </div>
 
 
-    <!-- Result -->
-
-    <div class="block-result" id="blockResult" style="display: none;">
+    <div class="block-result" id="blockResult" style="display:none;">
 
         <div class="block-result-content">
 
@@ -1143,11 +1571,14 @@ require_once __DIR__ . '/../layout/header.php';
                 <i data-lucide="circle-check"></i>
             </div>
 
+
             <h2>
                 Blok yakunlandi
             </h2>
 
+
             <p id="blockResultText"></p>
+
 
             <a href="blocks.php" class="block-result-button">
                 Bloklar ro‘yxatiga qaytish
@@ -1163,11 +1594,14 @@ require_once __DIR__ . '/../layout/header.php';
 <script src="https://unpkg.com/lucide@latest"></script>
 
 <script>
+
     document.addEventListener(
         'DOMContentLoaded',
-        function() {
+        function () {
 
-            if (typeof lucide !== 'undefined') {
+            if (
+                typeof lucide !== 'undefined'
+            ) {
                 lucide.createIcons();
             }
 
@@ -1177,130 +1611,213 @@ require_once __DIR__ . '/../layout/header.php';
                     '.block-solving-page'
                 );
 
-            if (!page) {
-                return;
-            }
-
 
             const blockId =
-                parseInt(
-                    page.dataset.blockId,
-                    10
+                Number(
+                    page.dataset.blockId
                 );
+
 
             const sessionId =
-                parseInt(
-                    page.dataset.sessionId,
-                    10
+                Number(
+                    page.dataset.sessionId
                 );
 
+
             const totalQuestions =
-                parseInt(
-                    page.dataset.totalQuestions,
-                    10
+                Number(
+                    page.dataset.totalQuestions
                 );
 
 
             let currentPosition =
-                <?php echo $currentPosition; ?>;
+                <?php
+                echo $currentPosition;
+                ?>;
 
 
-            const questionIds = <?php
+            const questions =
+                <?php
 
-                                echo json_encode(
-                                    array_map(
-                                        function ($question) {
-                                            return (int) $question['id'];
-                                        },
-                                        $questions
-                                    )
-                                );
+                echo json_encode(
+                    array_map(
+                        function (array $question): array {
 
-                                ?>;
+                            return [
+
+                                'id' =>
+                                    (int) 
+                                    $question['id'],
+
+                                'type' =>
+                                    $question[
+                                        'question_type'
+                                    ],
+
+                                'text' =>
+                                    $question['text'],
+
+                                'part_a_text' =>
+                                    $question[
+                                        'part_a_text'
+                                    ],
+
+                                'part_b_text' =>
+                                    $question[
+                                        'part_b_text'
+                                    ],
+
+                                'options' =>
+                                    $question[
+                                        'options'
+                                    ],
+
+                                'images' =>
+                                    $question[
+                                        'images'
+                                    ]
+
+                            ];
+
+                        },
+                        $questions
+                    ),
+                    JSON_UNESCAPED_UNICODE |
+                    JSON_UNESCAPED_SLASHES
+                );
+
+                ?>;
 
 
-            const answeredQuestions = <?php
-
-                                        echo json_encode(
-                                            array_values($answeredIds)
-                                        );
-
-                                        ?>;
-
-
-            const questionData = <?php
-
-                                    echo json_encode(
-                                        array_map(
-                                            function ($question) {
-
-                                                return [
-                                                    'id' =>
-                                                    (int) $question['id'],
-
-                                                    'type' =>
-                                                    $question['question_type'],
-
-                                                    'text' =>
-                                                    $question['text'],
-
-                                                    'options' =>
-                                                    $question['options'],
-
-                                                    'images' =>
-                                                    $question['images']
-                                                ];
-                                            },
-                                            $questions
-                                        )
-                                    );
-
-                                    ?>;
+            const answerState =
+                <?php
+                echo json_encode(
+                    $selectedAnswers,
+                    JSON_UNESCAPED_UNICODE
+                );
+                ?>;
 
 
-            function isAnswered(questionId) {
+            function isAnswered(
+                questionId
+            ) {
 
-                return answeredQuestions.indexOf(
-                    parseInt(questionId, 10)
-                ) !== -1;
+                return Object.prototype.hasOwnProperty.call(
+                    answerState,
+                    String(questionId)
+                );
 
             }
 
 
-            function renderQuestion(position) {
+            function escapeHtml(
+                value
+            ) {
+
+                const div =
+                    document.createElement(
+                        'div'
+                    );
+
+                div.textContent =
+                    value ?? '';
+
+                return div.innerHTML;
+
+            }
+
+
+            function escapeAttribute(
+                value
+            ) {
+
+                return escapeHtml(
+                    value
+                )
+                    .replace(
+                        /"/g,
+                        '&quot;'
+                    )
+                    .replace(
+                        /'/g,
+                        '&#039;'
+                    );
+
+            }
+
+
+            function getWrittenAnswer(
+                raw
+            ) {
+
+                if (!raw) {
+
+                    return {
+                        a: '',
+                        b: ''
+                    };
+                }
+
+
+                try {
+
+                    const parsed =
+                        JSON.parse(
+                            raw
+                        );
+
+
+                    return {
+
+                        a:
+                            parsed.a ||
+                            '',
+
+                        b:
+                            parsed.b ||
+                            ''
+
+                    };
+
+                } catch (
+                error
+                ) {
+
+                    return {
+                        a: '',
+                        b: ''
+                    };
+
+                }
+
+            }
+
+
+            function renderQuestion(
+                position
+            ) {
 
                 if (
                     position < 0 ||
-                    position >= questionData.length
+                    position >= questions.length
                 ) {
+
                     return;
                 }
 
 
-                const question =
-                    questionData[position];
+                currentPosition =
+                    position;
 
-                const questionCard =
+
+                const question =
+                    questions[position];
+
+
+                const card =
                     document.getElementById(
                         'questionCard'
                     );
-
-                const questionCounter =
-                    document.getElementById(
-                        'questionCounter'
-                    );
-
-                const progressFill =
-                    document.getElementById(
-                        'blockProgressFill'
-                    );
-
-
-                currentPosition = position;
-
-
-                questionCard.dataset.questionId =
-                    question.id;
 
 
                 let html = '';
@@ -1315,27 +1832,37 @@ require_once __DIR__ . '/../layout/header.php';
 
                 html += `
                 <div class="question-text">
-                    ${escapeHtml(question.text)
-                        .replace(/\n/g, '<br>')}
+                    ${escapeHtml(
+                    question.text
+                ).replace(
+                    /\n/g,
+                    '<br>'
+                )
+                    }
                 </div>
             `;
 
 
                 if (
                     question.images &&
-                    question.images.length > 0
+                    question.images.length
                 ) {
 
                     html += `
                     <div class="question-images">
                 `;
 
+
                     question.images.forEach(
-                        function(image) {
+                        function (
+                            image
+                        ) {
 
                             html += `
                             <img
-                                src="${escapeAttribute(image)}"
+                                src="${escapeAttribute(
+                                image
+                            )}"
                                 alt=""
                                 class="question-image"
                             >
@@ -1343,6 +1870,7 @@ require_once __DIR__ . '/../layout/header.php';
 
                         }
                     );
+
 
                     html += `
                     </div>
@@ -1363,57 +1891,60 @@ require_once __DIR__ . '/../layout/header.php';
 
 
                     question.options.forEach(
-                        function(option) {
+                        function (
+                            option
+                        ) {
+
+                            const answered =
+                                isAnswered(
+                                    question.id
+                                );
+
 
                             const selected =
-                                getSelectedAnswer(
-                                    question.id
-                                ) ===
+                                answered &&
+                                answerState[
+                                    String(
+                                        question.id
+                                    )
+                                ].answer ===
                                 option.option_key;
 
 
                             html += `
                             <button
                                 type="button"
-                                class="question-option
-                                ${
-                                    selected
-                                        ? 'question-option-selected'
-                                        : ''
+                                class="question-option ${selected
+                                    ? 'question-option-selected'
+                                    : ''
                                 }"
-                                data-answer="${
-                                    escapeAttribute(
-                                        option.option_key
-                                    )
-                                }"
-                                ${
-                                    selected
-                                        ? 'disabled'
-                                        : ''
+                                data-answer="${escapeAttribute(
+                                    option.option_key
+                                )}"
+                                ${answered
+                                    ? 'disabled'
+                                    : ''
                                 }
                             >
 
                                 <span
                                     class="question-option-key"
                                 >
-                                    ${
-                                        escapeHtml(
-                                            option.option_key
-                                        )
-                                    }
+                                    ${escapeHtml(
+                                    option.option_key
+                                )}
                                 </span>
 
                                 <span
                                     class="question-option-text"
                                 >
-                                    ${
-                                        escapeHtml(
-                                            option.option_text
-                                        ).replace(
-                                            /\n/g,
-                                            '<br>'
-                                        )
-                                    }
+                                    ${escapeHtml(
+                                    option.option_text
+                                ).replace(
+                                    /\n/g,
+                                    '<br>'
+                                )
+                                }
                                 </span>
 
                             </button>
@@ -1427,139 +1958,226 @@ require_once __DIR__ . '/../layout/header.php';
                     </div>
                 `;
 
+
                 } else {
+
+                    const answered =
+                        isAnswered(
+                            question.id
+                        );
+
+
+                    const stored =
+                        answered
+                            ? getWrittenAnswer(
+                                answerState[
+                                    String(
+                                        question.id
+                                    )
+                                ].answer
+                            )
+                            : {
+                                a: '',
+                                b: ''
+                            };
+
 
                     html += `
                     <div class="question-written">
+                `;
 
-                        <input
-                            type="text"
-                            class="question-answer-input"
-                            id="writtenAnswer"
-                            placeholder="Javobingizni kiriting"
-                            ${
-                                isAnswered(question.id)
-                                    ? 'disabled'
-                                    : ''
+
+                    if (
+                        question.part_a_text
+                    ) {
+
+                        html += `
+                        <div class="question-written-part">
+
+                            <div class="question-written-part-title">
+                                A
+                            </div>
+
+                            <div class="question-written-part-text">
+                                ${escapeHtml(
+                            question.part_a_text
+                        ).replace(
+                            /\n/g,
+                            '<br>'
+                        )
                             }
-                        >
+                            </div>
 
-                        ${
-                            !isAnswered(question.id)
-                                ? `
-                                    <button
-                                        type="button"
-                                        class="question-answer-submit"
-                                        id="writtenAnswerSubmit"
-                                    >
-                                        Javobni yuborish
-                                    </button>
-                                `
+                            <input
+                                type="text"
+                                class="question-answer-input"
+                                id="writtenAnswerA"
+                                placeholder="A qism javobi"
+                                value="${escapeAttribute(
+                                stored.a
+                            )}"
+                                ${answered
+                                ? 'disabled'
                                 : ''
-                        }
+                            }
+                            >
 
+                        </div>
+                    `;
+
+                    }
+
+
+                    if (
+                        question.part_b_text
+                    ) {
+
+                        html += `
+                        <div class="question-written-part">
+
+                            <div class="question-written-part-title">
+                                B
+                            </div>
+
+                            <div class="question-written-part-text">
+                                ${escapeHtml(
+                            question.part_b_text
+                        ).replace(
+                            /\n/g,
+                            '<br>'
+                        )
+                            }
+                            </div>
+
+                            <input
+                                type="text"
+                                class="question-answer-input"
+                                id="writtenAnswerB"
+                                placeholder="B qism javobi"
+                                value="${escapeAttribute(
+                                stored.b
+                            )}"
+                                ${answered
+                                ? 'disabled'
+                                : ''
+                            }
+                            >
+
+                        </div>
+                    `;
+
+                    }
+
+
+                    if (!answered) {
+
+                        html += `
+                        <button
+                            type="button"
+                            class="question-answer-submit"
+                            id="writtenAnswerSubmit"
+                        >
+                            Javobni yuborish
+                        </button>
+                    `;
+
+                    }
+
+
+                    html += `
                     </div>
                 `;
                 }
 
 
-                questionCard.innerHTML = html;
+                card.innerHTML =
+                    html;
 
 
-                questionCounter.textContent =
-                    (position + 1) +
+                card.dataset.questionId =
+                    question.id;
+
+
+                updateProgress();
+
+                updateNavigation();
+
+                bindQuestionEvents();
+
+
+                if (
+                    typeof lucide !==
+                    'undefined'
+                ) {
+                    lucide.createIcons();
+                }
+
+            }
+
+
+            function updateProgress() {
+
+                document.getElementById(
+                    'questionCounter'
+                ).textContent =
+                    (
+                        currentPosition + 1
+                    ) +
                     ' / ' +
                     totalQuestions;
 
 
-                progressFill.style.width =
+                document.getElementById(
+                    'blockProgressFill'
+                ).style.width =
                     (
-                        ((position + 1) /
-                            totalQuestions) * 100
-                    ) + '%';
-
-
-                updateNavigation();
-
-
-                bindQuestionEvents();
+                        (
+                            currentPosition + 1
+                        )
+                        /
+                        totalQuestions
+                    ) *
+                    100 +
+                    '%';
 
             }
 
 
             function updateNavigation() {
 
-                const previousButton =
+                const previous =
                     document.getElementById(
                         'previousQuestion'
                     );
 
-                const nextButton =
+
+                const next =
                     document.getElementById(
                         'nextQuestion'
                     );
 
 
-                previousButton.disabled =
-                    currentPosition <= 0;
-
-
-                const questionId =
-                    questionIds[
-                        currentPosition
+                const question =
+                    questions[
+                    currentPosition
                     ];
 
 
-                nextButton.disabled = !isAnswered(questionId);
+                previous.disabled =
+                    currentPosition <= 0;
 
 
-                if (
-                    currentPosition >=
-                    totalQuestions - 1
-                ) {
-
-                    nextButton.textContent =
-                        'Tugatish';
-
-                } else {
-
-                    nextButton.textContent =
-                        'Keyingi →';
-
-                }
-
-            }
-
-
-            function getSelectedAnswer(
-                questionId
-            ) {
-
-                const stored =
-                    sessionStorage.getItem(
-                        'block_' +
-                        sessionId +
-                        '_question_' +
-                        questionId
+                next.disabled =
+                    !isAnswered(
+                        question.id
                     );
 
-                return stored || '';
 
-            }
-
-
-            function storeSelectedAnswer(
-                questionId,
-                answer
-            ) {
-
-                sessionStorage.setItem(
-                    'block_' +
-                    sessionId +
-                    '_question_' +
-                    questionId,
-                    answer
-                );
+                next.textContent =
+                    currentPosition >=
+                        totalQuestions - 1
+                        ? 'Tugatish'
+                        : 'Keyingi →';
 
             }
 
@@ -1567,37 +2185,57 @@ require_once __DIR__ . '/../layout/header.php';
             function submitAnswer(
                 questionId,
                 answer,
-                button
+                button,
+                answerA = '',
+                answerB = ''
             ) {
 
                 if (
-                    !answer ||
-                    isAnswered(questionId)
+                    isAnswered(
+                        questionId
+                    )
                 ) {
+
                     return;
                 }
 
 
-                button.disabled = true;
+                if (
+                    !answer &&
+                    !answerA &&
+                    !answerB
+                ) {
+
+                    return;
+                }
+
+
+                if (button) {
+                    button.disabled = true;
+                }
 
 
                 const formData =
                     new FormData();
+
 
                 formData.append(
                     'action',
                     'answer'
                 );
 
+
                 formData.append(
                     'session_id',
-                    sessionId
+                    String(sessionId)
                 );
+
 
                 formData.append(
                     'question_id',
-                    questionId
+                    String(questionId)
                 );
+
 
                 formData.append(
                     'answer',
@@ -1605,100 +2243,113 @@ require_once __DIR__ . '/../layout/header.php';
                 );
 
 
+                formData.append(
+                    'answer_a',
+                    answerA
+                );
+
+
+                formData.append(
+                    'answer_b',
+                    answerB
+                );
+
+
                 fetch(
-                        'block.php?id=' + blockId, {
-                            method: 'POST',
-                            body: formData
-                        }
-                    )
+                    'block.php?id=' +
+                    encodeURIComponent(
+                        blockId
+                    ),
+                    {
+                        method: 'POST',
+                        body: formData,
+                        credentials:
+                            'same-origin'
+                    }
+                )
                     .then(
-                        function(response) {
+                        function (
+                            response
+                        ) {
+
                             return response.json();
+
                         }
                     )
                     .then(
-                        function(data) {
+                        function (
+                            data
+                        ) {
 
-                            if (!data.success) {
+                            if (
+                                !data.success
+                            ) {
 
-                                button.disabled =
-                                    false;
+                                if (button) {
+                                    button.disabled =
+                                        false;
+                                }
+
 
                                 alert(
                                     data.message ||
                                     'Xatolik yuz berdi.'
                                 );
 
+
                                 return;
                             }
 
 
-                            storeSelectedAnswer(
-                                questionId,
-                                answer
-                            );
-
-
-                            if (
-                                answeredQuestions.indexOf(
+                            answerState[
+                                String(
                                     questionId
-                                ) === -1
-                            ) {
+                                )
+                            ] = {
 
-                                answeredQuestions.push(
-                                    questionId
-                                );
-                            }
+                                answer:
+                                    question.type ===
+                                        'written'
 
+                                        ? JSON.stringify({
+                                            a:
+                                                answerA,
+                                            b:
+                                                answerB
+                                        })
 
-                            button.classList.add(
-                                'question-option-selected'
-                            );
+                                        : answer,
+
+                                is_correct:
+                                    data.is_correct
+
+                            };
 
 
                             updateNavigation();
 
 
-                            if (data.finished) {
+                            if (
+                                data.finished
+                            ) {
 
                                 showResult(
                                     data.correct_count,
                                     data.total_questions
                                 );
 
-                                return;
                             }
-
-
-                            /*
-                             * Automatically move forward.
-                             */
-
-                            setTimeout(
-                                function() {
-
-                                    if (
-                                        currentPosition <
-                                        totalQuestions - 1
-                                    ) {
-
-                                        renderQuestion(
-                                            currentPosition + 1
-                                        );
-
-                                    }
-
-                                },
-                                180
-                            );
 
                         }
                     )
                     .catch(
-                        function() {
+                        function () {
 
-                            button.disabled =
-                                false;
+                            if (button) {
+                                button.disabled =
+                                    false;
+                            }
+
 
                             alert(
                                 'Server bilan bog‘lanishda xatolik.'
@@ -1712,45 +2363,41 @@ require_once __DIR__ . '/../layout/header.php';
 
             function bindQuestionEvents() {
 
-                const optionButtons =
-                    document.querySelectorAll(
+                document
+                    .querySelectorAll(
                         '.question-option'
-                    );
+                    )
+                    .forEach(
+                        function (
+                            button
+                        ) {
+
+                            button.addEventListener(
+                                'click',
+                                function () {
+
+                                    const questionId =
+                                        Number(
+                                            document
+                                                .getElementById(
+                                                    'questionCard'
+                                                )
+                                                .dataset
+                                                .questionId
+                                        );
 
 
-                optionButtons.forEach(
-                    function(button) {
-
-                        button.addEventListener(
-                            'click',
-                            function() {
-
-                                const questionId =
-                                    parseInt(
-                                        document
-                                        .getElementById(
-                                            'questionCard'
-                                        )
-                                        .dataset
-                                        .questionId,
-                                        10
+                                    submitAnswer(
+                                        questionId,
+                                        button.dataset.answer,
+                                        button
                                     );
 
-                                const answer =
-                                    button.dataset.answer;
+                                }
+                            );
 
-
-                                submitAnswer(
-                                    questionId,
-                                    answer,
-                                    button
-                                );
-
-                            }
-                        );
-
-                    }
-                );
+                        }
+                    );
 
 
                 const writtenButton =
@@ -1759,32 +2406,64 @@ require_once __DIR__ . '/../layout/header.php';
                     );
 
 
-                if (writtenButton) {
+                if (
+                    writtenButton
+                ) {
 
                     writtenButton.addEventListener(
                         'click',
-                        function() {
+                        function () {
 
-                            const input =
-                                document.getElementById(
-                                    'writtenAnswer'
+                            const questionId =
+                                Number(
+                                    document
+                                        .getElementById(
+                                            'questionCard'
+                                        )
+                                        .dataset
+                                        .questionId
                                 );
 
-                            const answer =
-                                input.value.trim();
+
+                            const inputA =
+                                document.getElementById(
+                                    'writtenAnswerA'
+                                );
 
 
-                            if (!answer) {
+                            const inputB =
+                                document.getElementById(
+                                    'writtenAnswerB'
+                                );
+
+
+                            const answerA =
+                                inputA
+                                    ? inputA.value.trim()
+                                    : '';
+
+
+                            const answerB =
+                                inputB
+                                    ? inputB.value.trim()
+                                    : '';
+
+
+                            if (
+                                !answerA &&
+                                !answerB
+                            ) {
+
                                 return;
                             }
 
 
                             submitAnswer(
-                                questionIds[
-                                    currentPosition
-                                ],
-                                answer,
-                                writtenButton
+                                questionId,
+                                '',
+                                writtenButton,
+                                answerA,
+                                answerB
                             );
 
                         }
@@ -1800,41 +2479,30 @@ require_once __DIR__ . '/../layout/header.php';
                 total
             ) {
 
-                const result =
-                    document.getElementById(
-                        'blockResult'
-                    );
-
-                const resultText =
-                    document.getElementById(
-                        'blockResultText'
-                    );
+                document.getElementById(
+                    'questionCard'
+                ).style.display =
+                    'none';
 
 
-                resultText.textContent =
+                document.querySelector(
+                    '.question-navigation'
+                ).style.display =
+                    'none';
+
+
+                document.getElementById(
+                    'blockResultText'
+                ).textContent =
                     correct +
                     ' / ' +
                     total +
                     ' ta savol to‘g‘ri.';
 
 
-                document
-                    .getElementById(
-                        'questionCard'
-                    )
-                    .style.display =
-                    'none';
-
-
-                document
-                    .querySelector(
-                        '.question-navigation'
-                    )
-                    .style.display =
-                    'none';
-
-
-                result.style.display =
+                document.getElementById(
+                    'blockResult'
+                ).style.display =
                     'block';
 
 
@@ -1848,101 +2516,95 @@ require_once __DIR__ . '/../layout/header.php';
             }
 
 
-            document
-                .getElementById(
-                    'previousQuestion'
-                )
-                .addEventListener(
-                    'click',
-                    function() {
+            document.getElementById(
+                'previousQuestion'
+            ).addEventListener(
+                'click',
+                function () {
 
-                        if (
-                            currentPosition > 0
-                        ) {
+                    if (
+                        currentPosition > 0
+                    ) {
 
-                            renderQuestion(
-                                currentPosition - 1
-                            );
-
-                        }
+                        renderQuestion(
+                            currentPosition - 1
+                        );
 
                     }
-                );
+
+                }
+            );
 
 
-            document
-                .getElementById(
-                    'nextQuestion'
-                )
-                .addEventListener(
-                    'click',
-                    function() {
+            document.getElementById(
+                'nextQuestion'
+            ).addEventListener(
+                'click',
+                function () {
 
-                        const currentQuestionId =
-                            questionIds[
-                                currentPosition
-                            ];
+                    const question =
+                        questions[
+                        currentPosition
+                        ];
 
 
-                        if (
-                            !isAnswered(
-                                currentQuestionId
+                    if (
+                        !isAnswered(
+                            question.id
+                        )
+                    ) {
+
+                        return;
+                    }
+
+
+                    if (
+                        currentPosition <
+                        totalQuestions - 1
+                    ) {
+
+                        renderQuestion(
+                            currentPosition + 1
+                        );
+
+                    } else {
+
+                        const correct =
+                            Object.values(
+                                answerState
                             )
-                        ) {
-                            return;
-                        }
+                                .filter(
+                                    function (
+                                        item
+                                    ) {
+
+                                        return (
+                                            Number(
+                                                item.is_correct
+                                            ) === 1
+                                        );
+
+                                    }
+                                )
+                                .length;
 
 
-                        if (
-                            currentPosition <
-                            totalQuestions - 1
-                        ) {
-
-                            renderQuestion(
-                                currentPosition + 1
-                            );
-
-                        }
+                        showResult(
+                            correct,
+                            totalQuestions
+                        );
 
                     }
-                );
 
-
-            function escapeHtml(value) {
-
-                const div =
-                    document.createElement(
-                        'div'
-                    );
-
-                div.textContent =
-                    value == null ?
-                    '' :
-                    value;
-
-                return div.innerHTML;
-
-            }
-
-
-            function escapeAttribute(value) {
-
-                return escapeHtml(value)
-                    .replace(
-                        /"/g,
-                        '&quot;'
-                    )
-                    .replace(
-                        /'/g,
-                        '&#039;'
-                    );
-
-            }
+                }
+            );
 
 
             bindQuestionEvents();
 
-        });
+        }
+    );
+
 </script>
 
 

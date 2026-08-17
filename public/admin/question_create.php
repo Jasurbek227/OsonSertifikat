@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_POST['part_a_correct_answer']
     )
         ? trim(
-            (string)
+            (string) 
             $_POST['part_a_correct_answer']
         )
         : '';
@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_POST['part_b_correct_answer']
     )
         ? trim(
-            (string)
+            (string) 
             $_POST['part_b_correct_answer']
         )
         : '';
@@ -217,7 +217,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $optionText = isset($_POST[$fieldName])
                 ? trim(
-                    (string)
+                    (string) 
                     $_POST[$fieldName]
                 )
                 : '';
@@ -435,7 +435,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     $optionText =
                         trim(
-                            (string)
+                            (string) 
                             $_POST[$fieldName]
                         );
 
@@ -466,10 +466,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ";
 
 
-                    if (!mysqli_query(
-                        $conn,
-                        $optionQuery
-                    )) {
+                    if (
+                        !mysqli_query(
+                            $conn,
+                            $optionQuery
+                        )
+                    ) {
 
                         $error =
                             'Variantlarni saqlashda xatolik: ' .
@@ -527,10 +529,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ";
 
 
-                    if (!mysqli_query(
-                        $conn,
-                        $imageQuery
-                    )) {
+                    if (
+                        !mysqli_query(
+                            $conn,
+                            $imageQuery
+                        )
+                    ) {
 
                         $error =
                             'Rasm yo‘lini saqlashda xatolik: ' .
@@ -552,8 +556,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 header(
                     'Location: question_edit.php?id=' .
-                        $questionId .
-                        '&created=1'
+                    $questionId .
+                    '&created=1'
                 );
 
                 exit;
@@ -621,9 +625,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <?php if ($error !== ''): ?>
 
-        <div class="admin-message admin-message-error">
+            <div class="admin-message admin-message-error">
 
-            <?php
+                <?php
                 echo htmlspecialchars(
                     $error,
                     ENT_QUOTES,
@@ -631,7 +635,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
                 ?>
 
-        </div>
+            </div>
 
         <?php endif; ?>
 
@@ -667,26 +671,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 as $topic
                             ): ?>
 
-                            <option value="<?php
-                                                echo (int)
-                                                $topic['id'];
-                                                ?>" <?php
-                                                    if (
-                                                        isset(
-                                                            $_POST['topic_id']
-                                                        ) &&
-                                                        (
-                                                            (int)
-                                                            $_POST['topic_id'] ===
-                                                            (int)
-                                                            $topic['id']
-                                                        )
-                                                    ) {
-                                                        echo 'selected';
-                                                    }
-                                                    ?>>
+                                <option value="<?php
+                                echo (int) 
+                                    $topic['id'];
+                                ?>" <?php
+                                if (
+                                    isset(
+                                    $_POST['topic_id']
+                                ) &&
+                                    (
+                                        (int) 
+                                        $_POST['topic_id'] ===
+                                        (int) 
+                                        $topic['id']
+                                    )
+                                ) {
+                                    echo 'selected';
+                                }
+                                ?>>
 
-                                <?php
+                                    <?php
                                     echo htmlspecialchars(
                                         $topic['name'],
                                         ENT_QUOTES,
@@ -694,7 +698,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     );
                                     ?>
 
-                            </option>
+                                </option>
 
                             <?php endforeach; ?>
 
@@ -720,37 +724,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
                             <option value="multiple_choice" <?php
-                                                            echo (
-                                                                $postedQuestionType ===
-                                                                'multiple_choice'
-                                                            )
-                                                                ? 'selected'
-                                                                : '';
-                                                            ?>>
+                            echo (
+                                $postedQuestionType ===
+                                'multiple_choice'
+                            )
+                                ? 'selected'
+                                : '';
+                            ?>>
                                 Variantli
                             </option>
 
 
                             <option value="six_option" <?php
-                                                        echo (
-                                                            $postedQuestionType ===
-                                                            'six_option'
-                                                        )
-                                                            ? 'selected'
-                                                            : '';
-                                                        ?>>
+                            echo (
+                                $postedQuestionType ===
+                                'six_option'
+                            )
+                                ? 'selected'
+                                : '';
+                            ?>>
                                 6 variantli
                             </option>
 
 
                             <option value="written" <?php
-                                                    echo (
-                                                        $postedQuestionType ===
-                                                        'written'
-                                                    )
-                                                        ? 'selected'
-                                                        : '';
-                                                    ?>>
+                            echo (
+                                $postedQuestionType ===
+                                'written'
+                            )
+                                ? 'selected'
+                                : '';
+                            ?>>
                                 Yozma
                             </option>
 
@@ -772,15 +776,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
                     <textarea name="text" id="questionText" rows="8" required><?php
-                                                                                echo isset($_POST['text'])
-                                                                                    ? htmlspecialchars(
-                                                                                        (string)
-                                                                                        $_POST['text'],
-                                                                                        ENT_QUOTES,
-                                                                                        'UTF-8'
-                                                                                    )
-                                                                                    : '';
-                                                                                ?></textarea>
+                    echo isset($_POST['text'])
+                        ? htmlspecialchars(
+                            (string) 
+                            $_POST['text'],
+                            ENT_QUOTES,
+                            'UTF-8'
+                        )
+                        : '';
+                    ?></textarea>
 
                 </div>
 
@@ -820,23 +824,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <select name="variant_count" id="variantCount">
 
                         <option value="4" <?php
-                                            echo (
-                                                $postedVariantCount === 4
-                                            )
-                                                ? 'selected'
-                                                : '';
-                                            ?>>
+                        echo (
+                            $postedVariantCount === 4
+                        )
+                            ? 'selected'
+                            : '';
+                        ?>>
                             4 ta
                         </option>
 
 
                         <option value="5" <?php
-                                            echo (
-                                                $postedVariantCount === 5
-                                            )
-                                                ? 'selected'
-                                                : '';
-                                            ?>>
+                        echo (
+                            $postedVariantCount === 5
+                        )
+                            ? 'selected'
+                            : '';
+                        ?>>
                             5 ta
                         </option>
 
@@ -866,39 +870,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         as $key
                     ): ?>
 
-                    <div class="
+                        <div class="
                             admin-option-row
                             option-field
                             option-<?php
-                                    echo strtolower($key);
-                                    ?>
+                            echo strtolower($key);
+                            ?>
                         " data-option="<?php
-                                        echo $key;
-                                        ?>">
+                        echo $key;
+                        ?>">
 
 
-                        <input type="text" name="option_<?php
-                                                    echo strtolower($key);
-                                                    ?>" placeholder="Variant <?php
-                                                                                        echo $key;
-                                                                                        ?>"><?php
-                                                                    $optionField =
-                                                                        'option_' .
-                                                                        strtolower($key);
+                            <input type="text" name="option_<?php
+                            echo strtolower($key);
+                            ?>" placeholder="Variant <?php
+                            echo $key;
+                            ?>"><?php
+                            $optionField =
+                                'option_' .
+                                strtolower($key);
 
-                                                                    echo isset(
-                                                                        $_POST[$optionField]
-                                                                    )
-                                                                        ? htmlspecialchars(
-                                                                            (string)
-                                                                            $_POST[$optionField],
-                                                                            ENT_QUOTES,
-                                                                            'UTF-8'
-                                                                        )
-                                                                        : '';
-                                                                    ?>
+                            echo isset(
+                                $_POST[$optionField]
+                            )
+                                ? htmlspecialchars(
+                                    (string) 
+                                    $_POST[$optionField],
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                )
+                                : '';
+                            ?>
 
-                    </div>
+                        </div>
 
                     <?php endforeach; ?>
 
@@ -918,7 +922,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <select name="correct_answer" id="correctAnswer" required>
 
                         <option value="" disabled selected hidden>
-                        To‘g‘ri javob
+                            To‘g‘ri javob
                         </option>
 
 
@@ -951,7 +955,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
 
-                
+
 
             </div>
 
@@ -985,17 +989,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
                     <textarea name="part_a_text" id="partAText" rows="5"><?php
-                                                                            echo isset(
-                                                                                $_POST['part_a_text']
-                                                                            )
-                                                                                ? htmlspecialchars(
-                                                                                    (string)
-                                                                                    $_POST['part_a_text'],
-                                                                                    ENT_QUOTES,
-                                                                                    'UTF-8'
-                                                                                )
-                                                                                : '';
-                                                                            ?></textarea>
+                    echo isset(
+                        $_POST['part_a_text']
+                    )
+                        ? htmlspecialchars(
+                            (string) 
+                            $_POST['part_a_text'],
+                            ENT_QUOTES,
+                            'UTF-8'
+                        )
+                        : '';
+                    ?></textarea>
 
                 </div>
 
@@ -1008,17 +1012,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
                     <input type="text" name="part_a_correct_answer" id="partACorrect" value="<?php
-                                                                                                echo isset(
-                                                                                                    $_POST['part_a_correct_answer']
-                                                                                                )
-                                                                                                    ? htmlspecialchars(
-                                                                                                        (string)
-                                                                                                        $_POST['part_a_correct_answer'],
-                                                                                                        ENT_QUOTES,
-                                                                                                        'UTF-8'
-                                                                                                    )
-                                                                                                    : '';
-                                                                                                ?>">
+                    echo isset(
+                        $_POST['part_a_correct_answer']
+                    )
+                        ? htmlspecialchars(
+                            (string) 
+                            $_POST['part_a_correct_answer'],
+                            ENT_QUOTES,
+                            'UTF-8'
+                        )
+                        : '';
+                    ?>">
 
                 </div>
 
@@ -1031,17 +1035,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
                     <textarea name="part_b_text" id="partBText" rows="5"><?php
-                                                                            echo isset(
-                                                                                $_POST['part_b_text']
-                                                                            )
-                                                                                ? htmlspecialchars(
-                                                                                    (string)
-                                                                                    $_POST['part_b_text'],
-                                                                                    ENT_QUOTES,
-                                                                                    'UTF-8'
-                                                                                )
-                                                                                : '';
-                                                                            ?></textarea>
+                    echo isset(
+                        $_POST['part_b_text']
+                    )
+                        ? htmlspecialchars(
+                            (string) 
+                            $_POST['part_b_text'],
+                            ENT_QUOTES,
+                            'UTF-8'
+                        )
+                        : '';
+                    ?></textarea>
 
                 </div>
 
@@ -1054,17 +1058,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
                     <input type="text" name="part_b_correct_answer" id="partBCorrect" value="<?php
-                                                                                                echo isset(
-                                                                                                    $_POST['part_b_correct_answer']
-                                                                                                )
-                                                                                                    ? htmlspecialchars(
-                                                                                                        (string)
-                                                                                                        $_POST['part_b_correct_answer'],
-                                                                                                        ENT_QUOTES,
-                                                                                                        'UTF-8'
-                                                                                                    )
-                                                                                                    : '';
-                                                                                                ?>">
+                    echo isset(
+                        $_POST['part_b_correct_answer']
+                    )
+                        ? htmlspecialchars(
+                            (string) 
+                            $_POST['part_b_correct_answer'],
+                            ENT_QUOTES,
+                            'UTF-8'
+                        )
+                        : '';
+                    ?>">
 
                 </div>
 
@@ -1084,7 +1088,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </h2>
 
                         <p>
-                            Ixtiyoriy rasm yo‘llari.
+                            Savolga rasm biriktiring.
                         </p>
 
                     </div>
@@ -1092,20 +1096,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
 
-                <div id="imagePathList" class="admin-image-path-list">
-
-                    <div class="admin-image-path-row">
-
-                        <input type="text" name="image_paths[]" placeholder="images/questions/example.png">
-
-                    </div>
-
-                </div>
+                <div id="selectedImageList" class="admin-selected-image-list"></div>
 
 
-                <button type="button" class="btn btn-outline-light" id="addImagePath">
-                    <i data-lucide="plus"></i>
-                    Rasm yo‘li
+                <input type="hidden" name="image_paths[]" id="selectedImagePath" value="">
+
+
+                <button type="button" class="btn btn-outline-light" id="openImagePicker">
+                    <i data-lucide="images"></i>
+                    Rasmlar kutubxonasidan tanlash
                 </button>
 
             </div>
@@ -1116,10 +1115,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <label class="admin-checkbox">
 
                 <input type="checkbox" name="is_new" value="1" <?php
-                                                                echo isset($_POST['is_new'])
-                                                                    ? 'checked'
-                                                                    : '';
-                                                                ?>>
+                echo isset($_POST['is_new'])
+                    ? 'checked'
+                    : '';
+                ?>>
 
                 <span>
                     Yangi savol
@@ -1152,463 +1151,524 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <script>
-    document.addEventListener(
-        'DOMContentLoaded',
-        function() {
+        document.addEventListener(
+            'DOMContentLoaded',
+            function () {
 
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-
-
-            const questionType =
-                document.getElementById('questionType');
-
-            const optionsSection =
-                document.getElementById('optionsSection');
-
-            const writtenSection =
-                document.getElementById('writtenSection');
-
-            const variantCountWrapper =
-                document.getElementById('variantCountWrapper');
-
-            const variantCount =
-                document.getElementById('variantCount');
-
-            const correctAnswer =
-                document.getElementById('correctAnswer');
-
-            const addVariantButton =
-                document.getElementById('addVariantButton');
-
-            const optionRows =
-                document.querySelectorAll('.option-field');
-
-
-            function getVariantCount() {
-
-                if (questionType.value === 'six_option') {
-                    return 6;
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
                 }
 
-                if (questionType.value === 'multiple_choice') {
-                    return parseInt(
-                        variantCount.value,
-                        10
-                    ) || 4;
-                }
 
-                return 0;
-            }
+                const questionType =
+                    document.getElementById('questionType');
 
+                const optionsSection =
+                    document.getElementById('optionsSection');
 
-            function getActiveLetters() {
+                const writtenSection =
+                    document.getElementById('writtenSection');
 
-                const letters = [
-                    'A',
-                    'B',
-                    'C',
-                    'D',
-                    'E',
-                    'F'
-                ];
+                const variantCountWrapper =
+                    document.getElementById('variantCountWrapper');
 
-                return letters.slice(
-                    0,
-                    getVariantCount()
-                );
-            }
+                const variantCount =
+                    document.getElementById('variantCount');
+
+                const correctAnswer =
+                    document.getElementById('correctAnswer');
+
+                const addVariantButton =
+                    document.getElementById('addVariantButton');
+
+                const optionRows =
+                    document.querySelectorAll('.option-field');
 
 
-            function clearField(row) {
+                function getVariantCount() {
 
-                const textarea =
-                    row.querySelector('textarea');
-
-                if (textarea) {
-                    textarea.value = '';
-                }
-            }
-
-
-            function updateOptionFields() {
-
-                const activeLetters =
-                    getActiveLetters();
-
-
-                optionRows.forEach(
-                    function(row) {
-
-                        const letter =
-                            row.dataset.option;
-
-
-                        if (
-                            activeLetters.includes(letter)
-                        ) {
-
-                            row.hidden = false;
-
-                        } else {
-
-                            row.hidden = true;
-
-                            clearField(row);
-                        }
-
+                    if (questionType.value === 'six_option') {
+                        return 6;
                     }
-                );
 
-
-                /*
-                |--------------------------------------------------------------------------
-                | + Variant button
-                |--------------------------------------------------------------------------
-                */
-
-                if (
-                    questionType.value === 'multiple_choice' &&
-                    getVariantCount() === 4
-                ) {
-
-                    addVariantButton.hidden = false;
-
-                } else {
-
-                    addVariantButton.hidden = true;
-                }
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | Correct answer choices
-                |--------------------------------------------------------------------------
-                */
-
-                const currentValue =
-                    correctAnswer.value;
-
-
-                correctAnswer.innerHTML = '';
-
-
-                const placeholder =
-                    document.createElement('option');
-
-                placeholder.value = '';
-                placeholder.textContent = 'Tanlang';
-                placeholder.disabled = true;
-                placeholder.hidden = true;
-
-                correctAnswer.appendChild(
-                    placeholder
-                );
-
-
-                activeLetters.forEach(
-                    function(letter) {
-
-                        const option =
-                            document.createElement('option');
-
-                        option.value = letter;
-                        option.textContent = letter;
-
-                        correctAnswer.appendChild(
-                            option
-                        );
-
+                    if (questionType.value === 'multiple_choice') {
+                        return parseInt(
+                            variantCount.value,
+                            10
+                        ) || 4;
                     }
-                );
 
-
-                if (
-                    activeLetters.includes(currentValue)
-                ) {
-
-                    correctAnswer.value =
-                        currentValue;
-
-                } else {
-
-                    correctAnswer.value = '';
-                }
-
-            }
-
-
-            function updateQuestionType() {
-
-                const type =
-                    questionType.value;
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | Default
-                |--------------------------------------------------------------------------
-                */
-
-                optionsSection.hidden = true;
-                writtenSection.hidden = true;
-
-                variantCountWrapper.hidden = true;
-
-                correctAnswer.disabled = true;
-                correctAnswer.required = false;
-
-                addVariantButton.hidden = true;
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | Variantli
-                |--------------------------------------------------------------------------
-                */
-
-                if (type === 'multiple_choice') {
-
-                    optionsSection.hidden = false;
-
-                    writtenSection.hidden = true;
-
-                    variantCountWrapper.hidden = false;
-
-                    variantCount.disabled = false;
-
-                    correctAnswer.disabled = false;
-                    correctAnswer.required = true;
-
-
-                    updateOptionFields();
-
-                    return;
+                    return 0;
                 }
 
 
-                /*
-                |--------------------------------------------------------------------------
-                | 6 variantli
-                |--------------------------------------------------------------------------
-                */
+                function getActiveLetters() {
 
-                if (type === 'six_option') {
+                    const letters = [
+                        'A',
+                        'B',
+                        'C',
+                        'D',
+                        'E',
+                        'F'
+                    ];
 
-                    optionsSection.hidden = false;
-
-                    writtenSection.hidden = true;
-
-                    variantCountWrapper.hidden = true;
-
-                    variantCount.disabled = true;
-
-                    correctAnswer.disabled = false;
-                    correctAnswer.required = true;
-
-                    variantCount.value = '4';
-
-
-                    updateOptionFields();
-
-                    return;
+                    return letters.slice(
+                        0,
+                        getVariantCount()
+                    );
                 }
 
 
-                /*
-                |--------------------------------------------------------------------------
-                | Yozma
-                |--------------------------------------------------------------------------
-                */
+                function clearField(row) {
 
-                if (type === 'written') {
+                    const textarea =
+                        row.querySelector('textarea');
 
-                    optionsSection.hidden = true;
+                    if (textarea) {
+                        textarea.value = '';
+                    }
+                }
 
-                    writtenSection.hidden = false;
 
-                    variantCountWrapper.hidden = true;
+                function updateOptionFields() {
 
-                    variantCount.disabled = true;
-
-                    correctAnswer.value = '';
-                    correctAnswer.disabled = true;
-                    correctAnswer.required = false;
+                    const activeLetters =
+                        getActiveLetters();
 
 
                     optionRows.forEach(
-                        function(row) {
-                            clearField(row);
+                        function (row) {
+
+                            const letter =
+                                row.dataset.option;
+
+
+                            if (
+                                activeLetters.includes(letter)
+                            ) {
+
+                                row.hidden = false;
+
+                            } else {
+
+                                row.hidden = true;
+
+                                clearField(row);
+                            }
+
+                        }
+                    );
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | + Variant button
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (
+                        questionType.value === 'multiple_choice' &&
+                        getVariantCount() === 4
+                    ) {
+
+                        addVariantButton.hidden = false;
+
+                    } else {
+
+                        addVariantButton.hidden = true;
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Correct answer choices
+                    |--------------------------------------------------------------------------
+                    */
+
+                    const currentValue =
+                        correctAnswer.value;
+
+
+                    correctAnswer.innerHTML = '';
+
+
+                    const placeholder =
+                        document.createElement('option');
+
+                    placeholder.value = '';
+                    placeholder.textContent = 'Tanlang';
+                    placeholder.disabled = true;
+                    placeholder.hidden = true;
+
+                    correctAnswer.appendChild(
+                        placeholder
+                    );
+
+
+                    activeLetters.forEach(
+                        function (letter) {
+
+                            const option =
+                                document.createElement('option');
+
+                            option.value = letter;
+                            option.textContent = letter;
+
+                            correctAnswer.appendChild(
+                                option
+                            );
+
+                        }
+                    );
+
+
+                    if (
+                        activeLetters.includes(currentValue)
+                    ) {
+
+                        correctAnswer.value =
+                            currentValue;
+
+                    } else {
+
+                        correctAnswer.value = '';
+                    }
+
+                }
+
+
+                function updateQuestionType() {
+
+                    const type =
+                        questionType.value;
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Default
+                    |--------------------------------------------------------------------------
+                    */
+
+                    optionsSection.hidden = true;
+                    writtenSection.hidden = true;
+
+                    variantCountWrapper.hidden = true;
+
+                    correctAnswer.disabled = true;
+                    correctAnswer.required = false;
+
+                    addVariantButton.hidden = true;
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Variantli
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (type === 'multiple_choice') {
+
+                        optionsSection.hidden = false;
+
+                        writtenSection.hidden = true;
+
+                        variantCountWrapper.hidden = false;
+
+                        variantCount.disabled = false;
+
+                        correctAnswer.disabled = false;
+                        correctAnswer.required = true;
+
+
+                        updateOptionFields();
+
+                        return;
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | 6 variantli
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (type === 'six_option') {
+
+                        optionsSection.hidden = false;
+
+                        writtenSection.hidden = true;
+
+                        variantCountWrapper.hidden = true;
+
+                        variantCount.disabled = true;
+
+                        correctAnswer.disabled = false;
+                        correctAnswer.required = true;
+
+                        variantCount.value = '4';
+
+
+                        updateOptionFields();
+
+                        return;
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Yozma
+                    |--------------------------------------------------------------------------
+                    */
+
+                    if (type === 'written') {
+
+                        optionsSection.hidden = true;
+
+                        writtenSection.hidden = false;
+
+                        variantCountWrapper.hidden = true;
+
+                        variantCount.disabled = true;
+
+                        correctAnswer.value = '';
+                        correctAnswer.disabled = true;
+                        correctAnswer.required = false;
+
+
+                        optionRows.forEach(
+                            function (row) {
+                                clearField(row);
+                                row.hidden = true;
+                            }
+                        );
+
+                        return;
+                    }
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Tanlang
+                    |--------------------------------------------------------------------------
+                    */
+
+                    correctAnswer.value = '';
+
+                    optionRows.forEach(
+                        function (row) {
                             row.hidden = true;
                         }
                     );
 
-                    return;
                 }
 
 
                 /*
                 |--------------------------------------------------------------------------
-                | Tanlang
+                | Question type change
                 |--------------------------------------------------------------------------
                 */
 
-                correctAnswer.value = '';
+                questionType.addEventListener(
+                    'change',
+                    updateQuestionType
+                );
 
-                optionRows.forEach(
-                    function(row) {
-                        row.hidden = true;
+
+                /*
+                |--------------------------------------------------------------------------
+                | 4 -> 5 variants
+                |--------------------------------------------------------------------------
+                */
+
+                variantCount.addEventListener(
+                    'change',
+                    updateOptionFields
+                );
+
+
+                addVariantButton.addEventListener(
+                    'click',
+                    function () {
+
+                        if (
+                            questionType.value !==
+                            'multiple_choice'
+                        ) {
+                            return;
+                        }
+
+
+                        variantCount.value = '5';
+
+                        updateOptionFields();
+
                     }
                 );
 
-            }
+
+                /*
+                |--------------------------------------------------------------------------
+                | Images
+                |--------------------------------------------------------------------------
+                */
+
+                const openImagePicker =
+                    document.getElementById(
+                        'openImagePicker'
+                    );
+
+                const selectedImageList =
+                    document.getElementById(
+                        'selectedImageList'
+                    );
+
+                const selectedImagePath =
+                    document.getElementById(
+                        'selectedImagePath'
+                    );
 
 
-            /*
-            |--------------------------------------------------------------------------
-            | Question type change
-            |--------------------------------------------------------------------------
-            */
+                function renderSelectedImage(path) {
 
-            questionType.addEventListener(
-                'change',
-                updateQuestionType
-            );
+                    selectedImageList.innerHTML = '';
 
 
-            /*
-            |--------------------------------------------------------------------------
-            | 4 -> 5 variants
-            |--------------------------------------------------------------------------
-            */
-
-            variantCount.addEventListener(
-                'change',
-                updateOptionFields
-            );
-
-
-            addVariantButton.addEventListener(
-                'click',
-                function() {
-
-                    if (
-                        questionType.value !==
-                        'multiple_choice'
-                    ) {
+                    if (!path) {
                         return;
                     }
 
 
-                    variantCount.value = '5';
-
-                    updateOptionFields();
-
-                }
-            );
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | Images
-            |--------------------------------------------------------------------------
-            */
-
-            const imagePathList =
-                document.getElementById(
-                    'imagePathList'
-                );
-
-            const addImagePath =
-                document.getElementById(
-                    'addImagePath'
-                );
-
-
-            addImagePath.addEventListener(
-                'click',
-                function() {
-
-                    const row =
+                    const item =
                         document.createElement(
                             'div'
                         );
 
-                    row.className =
-                        'admin-image-path-row';
+                    item.className =
+                        'admin-selected-image';
 
 
-                    row.innerHTML = `
-                    <input
-                        type="text"
-                        name="image_paths[]"
-                        placeholder="images/questions/example.png"
-                    >
+                    item.innerHTML = `
+        <img
+            src="../${path}"
+            alt=""
+        >
 
-                    <button
-                        type="button"
-                        class="
-                            btn
-                            btn-outline-light
-                            remove-image-path
-                        "
-                    >
-                        <i data-lucide="x"></i>
-                    </button>
-                `;
+        <div>
+            <strong>
+                Tanlangan rasm
+            </strong>
+
+            <small>
+                ${path}
+            </small>
+        </div>
+
+        <button
+            type="button"
+            class="btn btn-outline-light admin-small-button"
+            id="removeSelectedImage"
+        >
+            <i data-lucide="x"></i>
+            Olib tashlash
+        </button>
+    `;
 
 
-                    imagePathList.appendChild(row);
+                    selectedImageList.appendChild(
+                        item
+                    );
 
 
-                    if (typeof lucide !== 'undefined') {
+                    if (
+                        typeof lucide !== 'undefined'
+                    ) {
+
                         lucide.createIcons();
+
                     }
 
-                }
-            );
 
+                    document
+                        .getElementById(
+                            'removeSelectedImage'
+                        )
+                        .addEventListener(
+                            'click',
+                            function () {
 
-            imagePathList.addEventListener(
-                'click',
-                function(event) {
+                                selectedImagePath.value =
+                                    '';
 
-                    const button =
-                        event.target.closest(
-                            '.remove-image-path'
+                                selectedImageList.innerHTML =
+                                    '';
+
+                            }
                         );
 
-
-                    if (!button) {
-                        return;
-                    }
+                }
 
 
-                    const row =
-                        button.closest(
-                            '.admin-image-path-row'
+                openImagePicker.addEventListener(
+                    'click',
+                    function () {
+
+                        window.open(
+                            'images.php?picker=1',
+                            'osonsertifikatImagePicker',
+                            'width=1050,height=750,resizable=yes,scrollbars=yes'
                         );
 
-
-                    if (row) {
-                        row.remove();
                     }
-
-                }
-            );
+                );
 
 
-            /*
-            |--------------------------------------------------------------------------
-            | Initial state
-            |--------------------------------------------------------------------------
-            */
+                window.addEventListener(
+                    'message',
+                    function (event) {
 
-            updateQuestionType();
+                        if (
+                            event.origin !==
+                            window.location.origin
+                        ) {
 
-        }
-    );
+                            return;
+                        }
+
+
+                        if (
+                            !event.data ||
+                            event.data.type !==
+                            'osonsertifikat-image-selected'
+                        ) {
+
+                            return;
+                        }
+
+
+                        selectedImagePath.value =
+                            event.data.path;
+
+
+                        renderSelectedImage(
+                            event.data.path
+                        );
+
+                    }
+                );
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Initial state
+                |--------------------------------------------------------------------------
+                */
+
+                updateQuestionType();
+
+            }
+        );
     </script>
 
 </body>

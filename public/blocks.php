@@ -3,14 +3,13 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/auth.php';
-
 requireAuth();
 
 require_once __DIR__ . '/../includes/db.php';
 
-$pageTitle = '20 talik savollar';
+$pageTitle = 'Savol bloklari';
 
-$blocks = array();
+$blocks = [];
 
 $query = "
     SELECT
@@ -18,16 +17,24 @@ $query = "
         b.name,
         b.generation,
         b.description,
-        COUNT(bq.question_id) AS question_count
+        COUNT(q.id) AS question_count
     FROM blocks b
+
     LEFT JOIN block_questions bq
         ON bq.block_id = b.id
+
+    LEFT JOIN questions q
+        ON q.id = bq.question_id
+       AND q.is_active = 1
+
     WHERE b.is_active = 1
+
     GROUP BY
         b.id,
         b.name,
         b.generation,
         b.description
+
     ORDER BY b.id ASC
 ";
 
@@ -43,26 +50,21 @@ if ($result) {
 require_once __DIR__ . '/../layout/header.php';
 
 ?>
+
 <link rel="stylesheet" href="assets/css/style.css">
+
 <section class="page-section blocks-page">
 
     <a href="dashboard.php" class="page-back">
-
-        <span class="page-back-icon">
-            ←
-        </span>
-
-        <span>
-            Orqaga
-        </span>
-
+        <span class="page-back-icon">←</span>
+        <span>Orqaga</span>
     </a>
 
 
     <div class="page-heading">
 
         <h1 class="page-title">
-            20 talik savollar
+            Savol bloklari
         </h1>
 
         <p class="page-description">
@@ -78,19 +80,23 @@ require_once __DIR__ . '/../layout/header.php';
 
             <?php foreach ($blocks as $block): ?>
 
-                <a href="block.php?id=<?php echo (int) $block['id']; ?>" class="block-card">
+                <?php
+                $questionCount =
+                    (int) $block['question_count'];
+                ?>
+
+                <a href="block.php?id=<?php
+                echo (int) $block['id'];
+                ?>" class="block-card">
 
                     <div class="block-card-icon">
-
                         <i data-lucide="clipboard-list"></i>
-
                     </div>
 
 
                     <div class="block-card-content">
 
                         <h3 class="block-card-title">
-
                             <?php
                             echo htmlspecialchars(
                                 $block['name'],
@@ -98,14 +104,14 @@ require_once __DIR__ . '/../layout/header.php';
                                 'UTF-8'
                             );
                             ?>
-
                         </h3>
 
 
-                        <?php if (!empty($block['description'])): ?>
+                        <?php if (
+                            !empty($block['description'])
+                        ): ?>
 
                             <p class="block-card-description">
-
                                 <?php
                                 echo htmlspecialchars(
                                     $block['description'],
@@ -113,7 +119,6 @@ require_once __DIR__ . '/../layout/header.php';
                                     'UTF-8'
                                 );
                                 ?>
-
                             </p>
 
                         <?php endif; ?>
@@ -123,13 +128,18 @@ require_once __DIR__ . '/../layout/header.php';
 
                             <span>
                                 <?php
-                                echo (int) $block['question_count'];
+                                echo $questionCount;
                                 ?>
                                 ta savol
                             </span>
 
+
                             <span>
-                                Blok <?php echo (int) $block['id']; ?>
+                                <?php
+                                echo $questionCount >= 20
+                                    ? 'To‘liq blok'
+                                    : 'Qisqa blok';
+                                ?>
                             </span>
 
                         </div>
@@ -138,9 +148,7 @@ require_once __DIR__ . '/../layout/header.php';
 
 
                     <div class="block-card-arrow">
-
                         <i data-lucide="arrow-right"></i>
-
                     </div>
 
                 </a>
@@ -149,6 +157,7 @@ require_once __DIR__ . '/../layout/header.php';
 
         </div>
 
+
     <?php else: ?>
 
         <div class="blocks-content">
@@ -156,9 +165,7 @@ require_once __DIR__ . '/../layout/header.php';
             <div class="blocks-empty">
 
                 <div class="blocks-empty-icon">
-
                     <i data-lucide="clipboard-list"></i>
-
                 </div>
 
                 <h3>
@@ -166,7 +173,7 @@ require_once __DIR__ . '/../layout/header.php';
                 </h3>
 
                 <p>
-                    Yangi savollar bloklari tez orada qo‘shiladi.
+                    Yangi savol bloklari tez orada qo‘shiladi.
                 </p>
 
             </div>
@@ -181,13 +188,20 @@ require_once __DIR__ . '/../layout/header.php';
 <script src="https://unpkg.com/lucide@latest"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
 
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
+    document.addEventListener(
+        'DOMContentLoaded',
+        function () {
+
+            if (
+                typeof lucide !== 'undefined'
+            ) {
+                lucide.createIcons();
+            }
+
         }
+    );
 
-    });
 </script>
 
 

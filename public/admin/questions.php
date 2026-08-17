@@ -12,6 +12,39 @@ $pageTitle = 'Savollar';
 $message = '';
 $messageType = '';
 
+if (
+    isset($_GET['delete'])
+) {
+
+    if (
+        $_GET['delete'] === 'success'
+    ) {
+
+        $message =
+            'Savol butunlay o‘chirildi.';
+
+        $messageType =
+            'success';
+    } elseif (
+        $_GET['delete'] === 'error'
+    ) {
+
+        $message =
+            'Savolni o‘chirishda xatolik yuz berdi.';
+
+        $messageType =
+            'error';
+    } elseif (
+        $_GET['delete'] === 'invalid'
+    ) {
+
+        $message =
+            'Noto‘g‘ri savol ID.';
+
+        $messageType =
+            'error';
+    }
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -226,10 +259,7 @@ if ($result) {
 
 <section class="page-section admin-page">
 
-    <a
-        href="index.php"
-        class="page-back"
-    >
+    <a href="index.php" class="page-back">
         <span class="page-back-icon">←</span>
         <span>Admin panel</span>
     </a>
@@ -251,8 +281,8 @@ if ($result) {
     <?php if ($message !== ''): ?>
 
         <div class="admin-message admin-message-<?php
-            echo $messageType;
-        ?>">
+                                                echo $messageType;
+                                                ?>">
             <?php
             echo htmlspecialchars(
                 $message,
@@ -267,20 +297,14 @@ if ($result) {
 
     <div class="admin-toolbar">
 
-        <a
-            href="question_create.php"
-            class="admin-primary-button"
-        >
+        <a href="question_create.php" class="admin-primary-button">
             + Yangi savol
         </a>
 
     </div>
 
 
-    <form
-        method="GET"
-        class="admin-filter-form"
-    >
+    <form method="GET" class="admin-filter-form">
 
         <div class="admin-filter-field">
 
@@ -288,18 +312,13 @@ if ($result) {
                 Qidirish
             </label>
 
-            <input
-                type="text"
-                name="search"
-                value="<?php
-                echo htmlspecialchars(
-                    $search,
-                    ENT_QUOTES,
-                    'UTF-8'
-                );
-                ?>"
-                placeholder="Savol matni yoki ID"
-            >
+            <input type="text" name="search" value="<?php
+                                                    echo htmlspecialchars(
+                                                        $search,
+                                                        ENT_QUOTES,
+                                                        'UTF-8'
+                                                    );
+                                                    ?>" placeholder="Savol matni yoki ID">
 
         </div>
 
@@ -318,17 +337,14 @@ if ($result) {
 
                 <?php foreach ($topics as $topic): ?>
 
-                    <option
-                        value="<?php
-                        echo (int) $topic['id'];
-                        ?>"
-                        <?php
-                        echo $topicId ===
-                            (int) $topic['id']
-                            ? 'selected'
-                            : '';
-                        ?>
-                    >
+                    <option value="<?php
+                                    echo (int) $topic['id'];
+                                    ?>" <?php
+                            echo $topicId ===
+                                (int) $topic['id']
+                                ? 'selected'
+                                : '';
+                            ?>>
                         <?php
                         echo htmlspecialchars(
                             $topic['name'],
@@ -357,38 +373,29 @@ if ($result) {
                     Barchasi
                 </option>
 
-                <option
-                    value="multiple_choice"
-                    <?php
-                    echo $type ===
-                        'multiple_choice'
-                        ? 'selected'
-                        : '';
-                    ?>
-                >
+                <option value="multiple_choice" <?php
+                                                echo $type ===
+                                                    'multiple_choice'
+                                                    ? 'selected'
+                                                    : '';
+                                                ?>>
                     Variantli
                 </option>
 
-                <option
-                    value="six_option"
-                    <?php
-                    echo $type ===
-                        'six_option'
-                        ? 'selected'
-                        : '';
-                    ?>
-                >
+                <option value="six_option" <?php
+                                            echo $type ===
+                                                'six_option'
+                                                ? 'selected'
+                                                : '';
+                                            ?>>
                     6 variantli
                 </option>
 
-                <option
-                    value="written"
-                    <?php
-                    echo $type === 'written'
-                        ? 'selected'
-                        : '';
-                    ?>
-                >
+                <option value="written" <?php
+                                        echo $type === 'written'
+                                            ? 'selected'
+                                            : '';
+                                        ?>>
                     Yozma
                 </option>
 
@@ -409,27 +416,21 @@ if ($result) {
                     Barchasi
                 </option>
 
-                <option
-                    value="active"
-                    <?php
-                    echo $activeFilter ===
-                        'active'
-                        ? 'selected'
-                        : '';
-                    ?>
-                >
+                <option value="active" <?php
+                                        echo $activeFilter ===
+                                            'active'
+                                            ? 'selected'
+                                            : '';
+                                        ?>>
                     Faol
                 </option>
 
-                <option
-                    value="inactive"
-                    <?php
-                    echo $activeFilter ===
-                        'inactive'
-                        ? 'selected'
-                        : '';
-                    ?>
-                >
+                <option value="inactive" <?php
+                                            echo $activeFilter ===
+                                                'inactive'
+                                                ? 'selected'
+                                                : '';
+                                            ?>>
                     Nofaol
                 </option>
 
@@ -438,10 +439,7 @@ if ($result) {
         </div>
 
 
-        <button
-            type="submit"
-            class="admin-secondary-button"
-        >
+        <button type="submit" class="admin-secondary-button">
             Filtrlash
         </button>
 
@@ -515,17 +513,13 @@ if ($result) {
 
                             <span>
                                 <?php
-                                echo (int) $question[
-                                    'option_count'
-                                ];
+                                echo (int) $question['option_count'];
                                 ?>
                                 variant
                             </span>
 
                             <?php if (
-                                (int) $question[
-                                    'image_count'
-                                ] > 0
+                                (int) $question['image_count'] > 0
                             ): ?>
 
                                 <span>
@@ -577,52 +571,49 @@ if ($result) {
 
                     <div class="admin-question-actions">
 
-                        <a
-                            href="question_edit.php?id=<?php
-                            echo (int) $question['id'];
-                            ?>"
-                            class="admin-action-button"
-                        >
+                        <a href="question_edit.php?id=<?php
+                                                        echo (int) $question['id'];
+                                                        ?>" class="admin-action-button">
                             Tahrirlash
                         </a>
 
 
-                        <form
-                            method="POST"
-                            onsubmit="
+                        <form method="POST" onsubmit="
                                 return confirm(
                                     'Savol holatini o‘zgartirasizmi?'
                                 );
-                            "
-                        >
+                            ">
 
-                            <input
-                                type="hidden"
-                                name="action"
-                                value="toggle"
-                            >
+                            <input type="hidden" name="action" value="toggle">
 
-                            <input
-                                type="hidden"
-                                name="question_id"
-                                value="<?php
-                                echo (int) $question['id'];
-                                ?>"
-                            >
+                            <input type="hidden" name="question_id" value="<?php
+                                                                            echo (int) $question['id'];
+                                                                            ?>">
 
-                            <button
-                                type="submit"
-                                class="admin-action-button"
-                            >
+                            <button type="submit" class="admin-action-button">
                                 <?php
                                 echo (
-                                    (int) $question[
-                                        'is_active'
-                                    ] === 1
+                                    (int) $question['is_active'] === 1
                                 )
                                     ? 'O‘chirish'
                                     : 'Faollashtirish';
                                 ?>
+                            </button>
+
+                        </form>
+                        <form method="POST" action="question_delete.php" onsubmit="
+        return confirm(
+            'DIQQAT!\n\nBu savol butunlay o‘chiriladi.\nSavolga tegishli variantlar, blok biriktirmalari, urinishlar, xatolar va boshqa bog‘langan ma’lumotlar ham o‘chiriladi.\n\nDavom etasizmi?'
+        );
+    ">
+
+                            <input type="hidden" name="question_id" value="<?php
+                                                                            echo (int) $question['id'];
+                                                                            ?>">
+
+                            <button type="submit" class="admin-danger-button">
+                                <i data-lucide="trash-2"></i>
+                                Butunlay o‘chirish
                             </button>
 
                         </form>

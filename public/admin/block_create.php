@@ -60,15 +60,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($name === '') {
 
         $error = 'Blok nomini kiriting.';
-
     } elseif ($generation <= 0) {
 
         $error = 'Generation noto‘g‘ri.';
+    } elseif (count($questionIds) === 0) {
 
-    } elseif (count($questionIds) !== 20) {
-
-        $error = 'Blok aynan 20 ta savoldan iborat bo‘lishi kerak.';
-
+        $error = 'Blok uchun kamida 1 ta savol tanlang.';
     }
 
 
@@ -101,12 +98,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     '$safeName',
                     $generation,
                     " .
-                    (
-                        $description !== ''
-                            ? "'$safeDescription'"
-                            : "NULL"
-                    ) .
-                    ",
+                (
+                    $description !== ''
+                    ? "'$safeDescription'"
+                    : "NULL"
+                ) .
+                ",
                     1
                 )
             ";
@@ -177,12 +174,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             header(
                 'Location: block_edit.php?id=' .
-                $blockId .
-                '&created=1'
+                    $blockId .
+                    '&created=1'
             );
 
             exit;
-
         } catch (Throwable $exception) {
 
             mysqli_rollback($conn);
@@ -331,7 +327,7 @@ if ($questionsResult) {
             </h1>
 
             <p class="admin-page-description">
-                20 ta savoldan iborat yangi blok yarating
+                Savollar blokini yarating
             </p>
 
         </div>
@@ -369,13 +365,13 @@ if ($questionsResult) {
                     </label>
 
                     <input type="text" name="name" value="<?php
-                        echo htmlspecialchars(
-                            (string)
-                            ($_POST['name'] ?? ''),
-                            ENT_QUOTES,
-                            'UTF-8'
-                        );
-                        ?>" placeholder="Masalan: 1-blok" required>
+                                                            echo htmlspecialchars(
+                                                                (string)
+                                                                ($_POST['name'] ?? ''),
+                                                                ENT_QUOTES,
+                                                                'UTF-8'
+                                                            );
+                                                            ?>" placeholder="Masalan: 1-blok" required>
 
                 </div>
 
@@ -387,10 +383,10 @@ if ($questionsResult) {
                     </label>
 
                     <input type="number" name="generation" min="1" value="<?php
-                        echo (int) (
-                            $_POST['generation'] ?? 1
-                        );
-                        ?>" required>
+                                                                            echo (int) (
+                                                                                $_POST['generation'] ?? 1
+                                                                            );
+                                                                            ?>" required>
 
                 </div>
 
@@ -404,13 +400,13 @@ if ($questionsResult) {
                 </label>
 
                 <textarea name="description" rows="4" placeholder="Ixtiyoriy tavsif"><?php
-                echo htmlspecialchars(
-                    (string)
-                    ($_POST['description'] ?? ''),
-                    ENT_QUOTES,
-                    'UTF-8'
-                );
-                ?></textarea>
+                                                                                        echo htmlspecialchars(
+                                                                                            (string)
+                                                                                            ($_POST['description'] ?? ''),
+                                                                                            ENT_QUOTES,
+                                                                                            'UTF-8'
+                                                                                        );
+                                                                                        ?></textarea>
 
             </div>
 
@@ -428,14 +424,22 @@ if ($questionsResult) {
                     </h2>
 
                     <p>
-                        Aynan 20 ta savol tanlang.
+                        Savollarni tanlang. Tavsiya etilgan savollar soni 20 ta.
                     </p>
 
                 </div>
 
 
                 <div class="admin-selection-count" id="selectionCount">
-                    0 / 20
+                    0 ta
+                </div>
+                <div id="blockQuestionWarning" class="admin-block-warning" hidden>
+                    <i data-lucide="triangle-alert"></i>
+
+                    <span>
+                        Bu blokda 20 tadan kam savol bor.
+                        20 ta savol tavsiya etiladi, lekin blokni yaratish mumkin.
+                    </span>
                 </div>
 
             </div>
@@ -452,12 +456,12 @@ if ($questionsResult) {
                         </label>
 
                         <input type="text" name="search" value="<?php
-                            echo htmlspecialchars(
-                                $search,
-                                ENT_QUOTES,
-                                'UTF-8'
-                            );
-                            ?>" placeholder="Savol yoki ID">
+                                                                echo htmlspecialchars(
+                                                                    $search,
+                                                                    ENT_QUOTES,
+                                                                    'UTF-8'
+                                                                );
+                                                                ?>" placeholder="Savol yoki ID">
 
                     </div>
 
@@ -480,15 +484,15 @@ if ($questionsResult) {
                             ): ?>
 
                             <option value="<?php
-                                    echo (int)
-                                        $topic['id'];
-                                    ?>" <?php
-                                    echo $topicId ===
-                                        (int)
-                                        $topic['id']
-                                        ? 'selected'
-                                        : '';
-                                    ?>>
+                                                echo (int)
+                                                $topic['id'];
+                                                ?>" <?php
+                                                    echo $topicId ===
+                                                        (int)
+                                                        $topic['id']
+                                                        ? 'selected'
+                                                        : '';
+                                                    ?>>
                                 <?php
                                     echo htmlspecialchars(
                                         $topic['name'],
@@ -534,22 +538,16 @@ if ($questionsResult) {
 
                         $oldSelection =
                             isset(
-                                $_POST[
-                                    'question_ids'
-                                ]
+                                $_POST['question_ids']
                             ) &&
                             is_array(
-                                $_POST[
-                                    'question_ids'
-                                ]
+                                $_POST['question_ids']
                             )
-                                ? array_map(
-                                    'intval',
-                                    $_POST[
-                                        'question_ids'
-                                    ]
-                                )
-                                : array();
+                            ? array_map(
+                                'intval',
+                                $_POST['question_ids']
+                            )
+                            : array();
 
                         $isChecked = in_array(
                             (int) $question['id'],
@@ -569,13 +567,13 @@ if ($questionsResult) {
                             ">
 
                     <input type="checkbox" name="question_ids[]" value="<?php
-                                echo (int)
-                                    $question['id'];
-                                ?>" class="block-question-checkbox" <?php
-                                echo $isChecked
-                                    ? 'checked'
-                                    : '';
-                                ?>>
+                                                                                echo (int)
+                                                                                $question['id'];
+                                                                                ?>" class="block-question-checkbox" <?php
+                                                                                                                    echo $isChecked
+                                                                                                                        ? 'checked'
+                                                                                                                        : '';
+                                                                                                                    ?>>
 
 
                     <div class="admin-question-picker-content">
@@ -586,16 +584,14 @@ if ($questionsResult) {
                                 #
                                 <?php
                                         echo (int)
-                                            $question['id'];
+                                        $question['id'];
                                         ?>
                             </span>
 
                             <span>
                                 <?php
                                         echo htmlspecialchars(
-                                            $question[
-                                                'topic_name'
-                                            ],
+                                            $question['topic_name'],
                                             ENT_QUOTES,
                                             'UTF-8'
                                         );
@@ -605,9 +601,7 @@ if ($questionsResult) {
                             <span>
                                 <?php
                                         echo htmlspecialchars(
-                                            $question[
-                                                'question_type'
-                                            ],
+                                            $question['question_type'],
                                             ENT_QUOTES,
                                             'UTF-8'
                                         );
@@ -741,38 +735,46 @@ document.addEventListener(
                             'is-selected'
                         );
                     }
+
                 }
             );
 
 
             countElement.textContent =
-                count + ' / 20';
+                count + ' ta';
 
 
-            if (count >= 20) {
-
-                checkboxes.forEach(
-                    function(checkbox) {
-
-                        if (!checkbox.checked) {
-                            checkbox.disabled = true;
-                        }
-
-                    }
+            const warning =
+                document.getElementById(
+                    'blockQuestionWarning'
                 );
 
-            } else {
 
-                checkboxes.forEach(
-                    function(checkbox) {
-                        checkbox.disabled = false;
-                    }
-                );
+            if (warning) {
+
+                warning.hidden = !(count > 0 && count < 20);
             }
 
 
+            /*
+             * There is no 20-question maximum anymore.
+             */
+
+            checkboxes.forEach(
+                function(checkbox) {
+
+                    checkbox.disabled = false;
+
+                }
+            );
+
+
+            /*
+             * At least one question is required.
+             */
+
             createButton.disabled =
-                count !== 20;
+                count === 0;
 
         }
 
