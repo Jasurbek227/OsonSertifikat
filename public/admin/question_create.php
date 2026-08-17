@@ -1513,7 +1513,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
     </script>
     <script src="../assets/js/admin-image-picker.js"></script>
-
+    <script src="../assets/js/admin.js"></script>
 </body>
 
 </html>

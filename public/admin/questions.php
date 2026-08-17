@@ -643,7 +643,7 @@ if ($result) {
     </div>
 
 </section>
-
+<script src="../assets/js/admin.js"></script>
 
 <?php
 
